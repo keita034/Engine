@@ -27,6 +27,23 @@ private:
 
 	std::unique_ptr<Camera> camera;
 
+	std::unique_ptr<Particle> particle;
+
+
+	//ビルボードで描画されるスプライト
+	std::unique_ptr<Sprite3D> spriteBillboard;
+
+	Transform spriteBillboardTrans0;
+
+	Transform spriteBillboardTrans1;
+
+	Transform spriteBillboardTrans2;
+
+	TextureData texData;
+
+	char PADDING5[4]{};
+	//================//
+
 public:
 
 	GameScene();

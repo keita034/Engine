@@ -42,6 +42,8 @@ public:
 	ID3D12Resource* GetconstBuff();
 
 	worldViewpojCamera* GetWorldViewpojCamera();
+
+
 };
 
 namespace EngineMathF

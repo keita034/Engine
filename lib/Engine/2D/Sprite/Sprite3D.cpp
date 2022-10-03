@@ -22,7 +22,7 @@ void Sprite3D::Draw(TextureData& textureData, Transform& transform, Camera* came
 	switch (flag)
 	{
 	case NonBillboard:
-		transform.matWorld = mScale * mRot * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
+		transform.GetWorldViewpojCamera()->matWorld = mScale * mRot * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
 		break;
 	case AllBillboard:
 	{
@@ -33,7 +33,7 @@ void Sprite3D::Draw(TextureData& textureData, Transform& transform, Camera* came
 		mat.m[3][2] = 0;
 		mat.m[3][3] = 1;
 
-		transform.matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
+		transform.GetWorldViewpojCamera()->matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
 		break;
 	}
 	case XBillboard:
@@ -50,7 +50,7 @@ void Sprite3D::Draw(TextureData& textureData, Transform& transform, Camera* came
 		mat.m[3][2] = 0;
 		mat.m[3][3] = 1;
 
-		transform.matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
+		transform.GetWorldViewpojCamera()->matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
 		break;
 	}
 	case YBillboard:
@@ -68,7 +68,7 @@ void Sprite3D::Draw(TextureData& textureData, Transform& transform, Camera* came
 		mat.m[3][3] = 1;
 
 
-		transform.matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
+		transform.GetWorldViewpojCamera()->matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
 		break;
 	}
 	case XYBillboard:
@@ -85,7 +85,7 @@ void Sprite3D::Draw(TextureData& textureData, Transform& transform, Camera* came
 		mat.m[3][2] = 0;
 		mat.m[3][3] = 1;
 
-		transform.matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
+		transform.GetWorldViewpojCamera()->matWorld = mScale * mRot * mat * mTrans * camera->GetViewMatrixInv() * camera->GetProjectionMatrix();
 		break;
 	}
 	default:
