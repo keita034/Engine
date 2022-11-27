@@ -1,17 +1,5 @@
 #include "AudioManager.h"
-
-std::wstring multiToWideWinapi(std::string const& src)
-{
-	auto const dest_size = ::MultiByteToWideChar(CP_ACP, 0U, src.data(), -1, nullptr, 0U);
-	std::vector<wchar_t> dest(static_cast<const unsigned _int64>(dest_size), L'\0');
-	if (::MultiByteToWideChar(CP_ACP, 0U, src.data(), -1, dest.data(), static_cast<int>(dest.size())) == 0)
-	{
-		throw std::system_error{ static_cast<int>(::GetLastError()), std::system_category() };
-	}
-	dest.resize(std::char_traits<wchar_t>::length(dest.data()));
-	dest.shrink_to_fit();
-	return std::wstring(dest.begin(), dest.end());
-}
+#include"AliceFunctionUtility.h"
 
 AudioManager* AudioManager::instance = nullptr;
 
@@ -179,7 +167,7 @@ uint32_t AudioManager::LoadAudio(std::string FileName, const float& Volume)
 
 	audios.emplace_back(FileName);
 
-	std::wstring path = multiToWideWinapi(FileName);
+	std::wstring path = AliceFunctionUtility::StringToWstring(FileName);
 
 	result = MFCreateSourceReaderFromURL(path.c_str(), NULL, &audios.back().pMFSourceReader);
 

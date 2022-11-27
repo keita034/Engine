@@ -1,9 +1,8 @@
 #pragma once
 #include"Model.h"
-#include"EngineMathUtility.h"
 #include"DefaultMaterial.h"
 
-class objModel : public Model
+class objModel : private Model
 {
 private:
 
@@ -13,20 +12,24 @@ public:
 	~objModel();
 
 	/// <summary>
-	/// オブジェクト生成
-	/// </summary>
-	virtual void Create(const char* filePath, bool smoothing = false)override;
-
-	/// <summary>
 	/// 描画
 	/// </summary>
 	/// <param name="camera">カメラ</param>
-	virtual void Draw(Transform* transform, Material* material = &DEFAULT_TEXTURE_MATERIAL)override;
+	virtual void EffectDraw(Transform* transform, float velocity = 0.0f, Material* material = nullptr);
+
+	virtual void Draw(Transform* transform, Material* material = nullptr)override;
 
 	//初期化
-	virtual void Initialize()override;
+	virtual void Initialize(const char* filePath, bool smoothing)override;
 
 private:
+
+	/// <summary>
+	/// オブジェクト生成
+	/// </summary>
+	virtual void Create(const char* filePath, bool smoothing)override;
+
+	virtual void Initialize(ModelShape shape);
 
 	void LoadMaterial(const std::string& directoryPath,const std::string& filename);
 	void LoadTexture(const std::string& directoryPath, const std::string& filename);

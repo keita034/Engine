@@ -28,9 +28,9 @@ void Mouse::Update()
 	GetCursorPos(&p);
 	ScreenToClient(FindWindowA("DirectXGame", nullptr), &p);
 	mousePos.x = static_cast<float>(p.x);
-	mousePos.x = EngineMathF::Clamp(mousePos.x, 0.0f, static_cast<float>(WindowsApp::GetInstance()->GetWindowWidth()));
+	mousePos.x = AliceMathF::Clamp(mousePos.x, 0.0f, static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().width));
 	mousePos.y = static_cast<float>(p.y);
-	mousePos.y = EngineMathF::Clamp(mousePos.y, 0.0f, static_cast<float>(WindowsApp::GetInstance()->GetWindowHeight()));
+	mousePos.y = AliceMathF::Clamp(mousePos.y, 0.0f, static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().height));
 }
 
 bool Mouse::MouseButtonTrigger(MouseButton button)
@@ -48,13 +48,13 @@ bool Mouse::MouseButtonOffTrigger(MouseButton button)
 	return (oldMouseState.rgbButtons[button] && !mouseState.rgbButtons[button]);
 }
 
-const EngineMathF::Vector2 Mouse::GetMousePos() const
+const AliceMathF::Vector2 Mouse::GetMousePos() const
 {
 	return mousePos;
 }
 
-const EngineMathF::Vector3 Mouse::GetMouseMove()
+const AliceMathF::Vector3 Mouse::GetMouseMove()
 {
-	EngineMathF::Vector3 result = { static_cast<float>(mouseState.lX), static_cast<float>(mouseState.lY), static_cast<float>(mouseState.lZ) };
+	AliceMathF::Vector3 result = { static_cast<float>(mouseState.lX), static_cast<float>(mouseState.lY), static_cast<float>(mouseState.lZ) };
 	return result;
 }

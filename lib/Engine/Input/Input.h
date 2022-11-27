@@ -90,13 +90,13 @@ public:
 	/// マウスの位置
 	/// </summary>
 	/// <returns>マウスの位置</returns>
-	const EngineMathF::Vector2 GetMousePos()const;
+	const AliceMathF::Vector2 GetMousePos()const;
 
 	/// <summary>
 	/// マウスの位置
 	/// </summary>
 	/// <returns>マウスの位置</returns>
-	const EngineMathF::Vector3 GetMouseMove();
+	const AliceMathF::Vector3 GetMouseMove();
 
 	//コントローラ-
 
@@ -114,7 +114,7 @@ public:
 	/// <param name="deadRange">デッドゾーンの範囲</param>
 	/// <param name="deadRate">デッドゾーン判定の度合い初期値1.0f</param>
 	/// <returns>倒したかどうか</returns>
-	bool StickTrigger(ControllerStick stickInput, const float& deadRange = 0.3f, const EngineMathF::Vector2& deadRate = { 1.0f,1.0f });
+	bool StickTrigger(ControllerStick stickInput, const float& deadRange = 0.3f, const AliceMathF::Vector2& deadRate = { 1.0f,1.0f });
 
 	/// <summary>
 	/// コントローラーボタンの入力
@@ -130,7 +130,7 @@ public:
 	/// <param name="deadRange">デッドゾーンの範囲初期値0.3f</param>
 	/// <param name="deadRate">デッドゾーン判定の度合い初期値1.0f</param>
 	/// <returns>倒したかどうか</returns>
-	bool StickInput(ControllerStick stickInput, const float& deadRange = 0.3f, const EngineMathF::Vector2& deadRate = { 1.0f,1.0f });
+	bool StickInput(ControllerStick stickInput, const float& deadRange = 0.3f, const AliceMathF::Vector2& deadRate = { 1.0f,1.0f });
 
 	/// <summary>
 	/// コントローラーボタンの離した瞬間
@@ -146,21 +146,21 @@ public:
 	/// <param name="deadRange">デッドゾーンの範囲初期値0.3f</param>
 	/// <param name="deadRate">デッドゾーン判定の度合い初期値1.0f</param>
 	/// <returns>離したか</returns>
-	bool StickOffTrigger(ControllerStick stickInput, const float& deadRange = 0.3f, const EngineMathF::Vector2& deadRate = { 1.0f,1.0f });
+	bool StickOffTrigger(ControllerStick stickInput, const float& deadRange = 0.3f, const AliceMathF::Vector2& deadRate = { 1.0f,1.0f });
 
 	/// <summary>
 	/// コントローラーの左スティックのベクトル
 	/// </summary>
 	/// <param name="deadRate">デッドゾーン判定の度合い初期値1.0f</param>
 	/// <returns>ベクトル</returns>
-	EngineMathF::Vector2 GetLeftStickVec(const EngineMathF::Vector2& deadRate = { 1.0f,1.0f });
+	AliceMathF::Vector2 GetLeftStickVec(const AliceMathF::Vector2& deadRate = { 1.0f,1.0f });
 
 	/// <summary>
 	/// コントローラーの右スティックのベクトル
 	/// </summary>
 	/// <param name="deadRate">デッドゾーン判定の度合い初期値1.0f</param>
 	/// <returns>ベクトル</returns>
-	EngineMathF::Vector2 GetRightStickVec(const EngineMathF::Vector2& deadRate = { 1.0f,1.0f });
+	AliceMathF::Vector2 GetRightStickVec(const AliceMathF::Vector2& deadRate = { 1.0f,1.0f });
 
 	/// <summary>
 	/// コントローラーを振動させる

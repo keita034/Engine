@@ -1,25 +1,14 @@
 #pragma once
-//#DirectXのやつ
 #include"ErrorException.h"
-
-//自作.h
-#include"EngineMathUtility.h"
-#include"WindowsApp.h"
-#include"DirectX12Core.h"
+#include"AliceMathUtility.h"
 #include "Camera.h"
 #include"Particle.h"
-//pragma comment
-
-
-
-//using namespace
-
 
 class BasicParticle : public Particle
 {
 private:
 
-	EngineMathF::Matrix4 mTrans, mRot, mScale;
+	AliceMathF::Matrix4 mTrans, mRot, mScale;
 
 public:
 
@@ -27,13 +16,7 @@ public:
 	~BasicParticle() = default;
 
 	//初期化
-	virtual void Initialize(ModelShareVaria& modelShareVaria)override;
-
-	///<summary>
-	///読み込み
-	///</summary>
-	///<param name="filePath">ファイルパス</param>
-	virtual void Load(const wchar_t* filePath)override;
+	virtual void Initialize()override;
 
 	///<summary>
 	///更新
@@ -52,26 +35,17 @@ public:
 	/// <param name="sColor">開始カラー</param>
 	/// <param name="eColor">終了カラー</param>
 	virtual void Add(
-		UINT life, EngineMathF::Vector3& position, EngineMathF::Vector3& velocity,
-		EngineMathF::Vector3& accel, EngineMathF::Vector2& scale, EngineMathF::Vector2& rotation
-		, EngineMathF::Vector4& sColor, EngineMathF::Vector4& eColor)override;
+		UINT life, const AliceMathF::Vector3& position, const AliceMathF::Vector3& velocity,
+		const AliceMathF::Vector3& accel, const AliceMathF::Vector2& scale, const AliceMathF::Vector2& rotation
+		, const AliceMathF::Vector4& sColor, const AliceMathF::Vector4& eColor)override;
 
 
 	///<summary>
 	///ビルボード描画
 	///</summary>
-	virtual void Draw(Camera* camera)override;
+	virtual void Draw(const TextureData& texture, Camera* camera, Material* material = nullptr)override;
 
 private:
-
-	//シェーダ－リソースビュー生
-	virtual void CreateShaderResourceView();
-	//定数バッファ生成(2D座標変換行列)
-	virtual void CreatConstBuff();
-	//頂点バッファ・インデックス生成
-	virtual void CreatVertexIndexBuffer();
-	//テクスチャバッファ生成
-	virtual void CreatTextureBuffer();
 
 	//コピーコンストラクタ・代入演算子削除
 	BasicParticle& operator=(const BasicParticle&) = delete;

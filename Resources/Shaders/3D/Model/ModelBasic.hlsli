@@ -19,8 +19,20 @@ cbuffer cbuff2 : register(b2)
     float4 lightcolor; //ライトの色(RGB)
 };
 
+cbuffer cbuff3 : register(b3)
+{
+    float velocity;
+};
+
 // 頂点シェーダーからピクセルシェーダーへのやり取りに使用する構造体
 struct VSOutput
+{
+    float4 svpos : SV_POSITION; // システム用頂点座標
+    float3 normal : NORMAL; // 法線
+    float2 uv : TEXCOORD; // uv値
+};
+
+struct GSOutput
 {
     float4 svpos : SV_POSITION; // システム用頂点座標
     float3 normal : NORMAL; // 法線

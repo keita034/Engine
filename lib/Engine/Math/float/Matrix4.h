@@ -2,8 +2,10 @@
 #include"ErrorException.h"
 #include"Vector3.h"
 
-namespace EngineMathF
+namespace AliceMathF
 {
+	class Quaternion;
+
 	class Matrix4
 	{
 	public:
@@ -19,6 +21,10 @@ namespace EngineMathF
 			float m10, float m11, float m12, float m13,
 			float m20, float m21, float m22, float m23,
 			float m30, float m31, float m32, float m33);
+
+		Matrix4(const Vector3& scale, Quaternion& rotat, const Vector3& trans);
+
+		Matrix4(const aiMatrix4x4& mat);
 
 		/// <summary>
 		/// コンストラクタ
@@ -88,7 +94,7 @@ namespace EngineMathF
 		/// 代入演算子
 		/// </summary>
 		Matrix4& operator=(const Matrix4& _m);
-
+		const Matrix4& operator=(Matrix4& _m);
 		/// <summary>
 		/// 加算
 		/// </summary>
@@ -118,6 +124,8 @@ namespace EngineMathF
 		/// 乗算
 		/// </summary>
 		Matrix4 operator*(const Matrix4& mat) const;
+
+		Matrix4& Transpose();
 	};
 
 	/// <summary>
@@ -191,6 +199,6 @@ namespace EngineMathF
 	/// <param name="eye"></param>
 	/// <param name="target"></param>
 	/// <param name="up"></param>
-	void MakeLookL(Vector3& eye, Vector3& target, Vector3& up, Matrix4& mat);
+	void MakeLookL(const Vector3& eye, const Vector3& target, const Vector3& up, Matrix4& mat);
 }
 

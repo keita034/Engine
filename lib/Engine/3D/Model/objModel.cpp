@@ -1,5 +1,7 @@
 #include "objModel.h"
 #include"TextureManager.h"
+#include"AliceFunctionUtility.h"
+#include"DefaultMaterial.h"
 
 objModel::objModel()
 {
@@ -12,7 +14,7 @@ objModel::~objModel()
 void objModel::Create(const char* filePath,bool smoothing)
 {
 	std::vector<std::string> files;
-	files = EngineMathUtility::getFileNames(filePath);
+	files = AliceFunctionUtility::getFileNames(filePath);
 	std::string fileName;
 
 	for (std::string file : files)
@@ -34,11 +36,11 @@ void objModel::Create(const char* filePath,bool smoothing)
 	}
 
 	//頂点座標
-	std::vector<EngineMathF::Vector3> positions;
+	std::vector<AliceMathF::Vector3> positions;
 	//法線ベクトル
-	std::vector<EngineMathF::Vector3> normals;
+	std::vector<AliceMathF::Vector3> normals;
 	//テクスチャUV
-	std::vector<EngineMathF::Vector2> texcoords;
+	std::vector<AliceMathF::Vector2> texcoords;
 
 	PosNormalUv tmp = { {},{},{} };
 
@@ -67,7 +69,7 @@ void objModel::Create(const char* filePath,bool smoothing)
 		if (key == "v")
 		{
 			//X,Y,Z座標読み込み
-			EngineMathF::Vector3 position{};
+			AliceMathF::Vector3 position{};
 			line_stream >> position.x;
 			line_stream >> position.y;
 			line_stream >> position.z;
@@ -78,7 +80,7 @@ void objModel::Create(const char* filePath,bool smoothing)
 		if (key == "vt")
 		{
 			//U,V成分読み込み
-			EngineMathF::Vector2 texcoord;
+			AliceMathF::Vector2 texcoord;
 			line_stream >> texcoord.x;
 			line_stream >> texcoord.y;
 			//V方向反転
@@ -90,7 +92,7 @@ void objModel::Create(const char* filePath,bool smoothing)
 		if (key == "vn")
 		{
 			//X,Y,Z成分読み込み
-			EngineMathF::Vector3 normal{};
+			AliceMathF::Vector3 normal{};
 			line_stream >> normal.x;
 			line_stream >> normal.y;
 			line_stream >> normal.z;
@@ -116,18 +118,18 @@ void objModel::Create(const char* filePath,bool smoothing)
 				index_stream >> indexNormal;
 
 				//頂点データの追加
-				tmp.pos = positions[static_cast<std::vector<EngineMathF::Vector2, std::allocator<EngineMathF::Vector2>>::size_type>(indexPosition) - 1];
-				tmp.normal = normals[static_cast<std::vector<EngineMathF::Vector2, std::allocator<EngineMathF::Vector2>>::size_type>(indexNormal) - 1];
-				tmp.uv = texcoords[static_cast<std::vector<EngineMathF::Vector2, std::allocator<EngineMathF::Vector2>>::size_type>(indexTexcoord) - 1];
+				tmp.pos = positions[static_cast<size_t>(indexPosition) - 1];
+				tmp.normal = normals[static_cast<size_t>(indexNormal) - 1];
+				tmp.uv = texcoords[static_cast<size_t>(indexTexcoord) - 1];
 				vertices.push_back(tmp);
 
 				if (smoothing)
 				{
-					smoothData[static_cast<size_t>(indexPosition)].emplace_back(static_cast<uint16_t>(vertices.size()-1));
+					smoothData[static_cast<size_t>(indexPosition)].emplace_back(static_cast<uint32_t>(vertices.size()-1));
 				}
 
 				//インデックスデータの追加
-				indices.emplace_back(static_cast<uint16_t>(indices.size()));
+				indices.emplace_back(static_cast<uint32_t>(indices.size()));
 
 			}
 		}
@@ -148,30 +150,46 @@ void objModel::Create(const char* filePath,bool smoothing)
 	CreatVertexIndexBuffer();
 
 	//頂点バッファへのデータ転送
-	for (size_t i = 0; i < vertices.size(); i++)
-	{
-		vertMap[i] = vertices[i]; // 座標をコピー
-	}
+	vertexBuffer->Update(vertices.data());
 
 	//インデックスバッファへのデータ転送
-	for (size_t i = 0; i < indices.size(); i++)
-	{
-		indexMap[i] = indices[i];   // インデックスをコピー
-	}
+	indexBuffer->Update(indices.data());
 
+	constBuffMaterial = std::make_unique<ConstantBuffer>();
+	constBuffMaterial->Create(sizeof(ConstBuffDataMaterial));
+	ConstBuffDataMaterial tmpMaterial = modelMaterial.GetConstBuffMaterial();
+	constBuffMaterial->Update(&tmpMaterial);
 
-	DirectX12Core::GetInstance()->CreateConstBuff(constMapMaterial, constBuffMaterial);
-	constMapMaterial->ambient = modelMaterial.ambient;
-	constMapMaterial->diffuse = modelMaterial.diffuse;
-	constMapMaterial->specular = modelMaterial.specular;
-	constMapMaterial->alpha = modelMaterial.alpha;
+	constBuffVelocity = std::make_unique<ConstantBuffer>();
+	constBuffVelocity->Create(sizeof(float));
+	float zero = 0.0f;
+	constBuffVelocity->Update(&zero);
+
+}
+
+void objModel::Initialize(ModelShape shape)
+{
+	static_cast<void>(shape);
 }
 
 void objModel::Draw(Transform* transform, Material* material)
 {
+	D3D12_VERTEX_BUFFER_VIEW vbView = vertexBuffer->GetView();
+	D3D12_INDEX_BUFFER_VIEW ibView = indexBuffer->GetView();
+
+
+	if (!material)
+	{
+		modelMaterialData = DefaultMaterial::GetDefaultMaterial()->DEFAULT_TEXTURE_MATERIAL.get();
+	}
+	else
+	{
+		modelMaterialData = material;
+	}
+
 	// パイプラインステートとルートシグネチャの設定コマンド
-	cmdList->SetPipelineState(material->pipelineState.Get());
-	cmdList->SetGraphicsRootSignature(material->rootSignature.Get());
+	cmdList->SetPipelineState(modelMaterialData->pipelineState->GetPipelineState());
+	cmdList->SetGraphicsRootSignature(modelMaterialData->rootSignature->GetRootSignature());
 
 	// プリミティブ形状の設定コマンド
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
@@ -184,14 +202,61 @@ void objModel::Draw(Transform* transform, Material* material)
 
 	// 定数バッファビュー(CBV)の設定コマンド
 	cmdList->SetGraphicsRootConstantBufferView(0, transform->GetconstBuff()->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, constBuffMaterial->GetGPUVirtualAddress());
-	light->SetConstBufferView(cmdList.Get(), 3);
+	cmdList->SetGraphicsRootConstantBufferView(1, constBuffMaterial->GetAddress());
+	light->SetConstBufferView(cmdList.Get(), 2);
+	cmdList->SetGraphicsRootConstantBufferView(3, constBuffVelocity->GetAddress());
 
 	// SRVヒープの設定コマンド
 	cmdList->SetDescriptorHeaps(1, textureData.srvHeap.GetAddressOf());
 
 	// SRVヒープの先頭にあるSRVをルートパラメータ2番に設定
-	cmdList->SetGraphicsRootDescriptorTable(2, textureData.gpuHandle);
+	cmdList->SetGraphicsRootDescriptorTable(4, textureData.gpuHandle);
+
+	// 描画コマンド
+	cmdList->DrawIndexedInstanced(maxIndex, 1, 0, 0, 0);
+}
+
+void objModel::EffectDraw(Transform* transform, float velocity, Material* material)
+{
+	D3D12_VERTEX_BUFFER_VIEW vbView = vertexBuffer->GetView();
+	D3D12_INDEX_BUFFER_VIEW ibView = indexBuffer->GetView();
+
+
+	if (!material)
+	{
+		modelMaterialData = DefaultMaterial::GetDefaultMaterial()->DEFAULT_TEXTURE_MATERIAL.get();
+	}
+	else
+	{
+		modelMaterialData = material;
+	}
+
+	constBuffVelocity->Update(&velocity);
+
+	// パイプラインステートとルートシグネチャの設定コマンド
+	cmdList->SetPipelineState(modelMaterialData->pipelineState->GetPipelineState());
+	cmdList->SetGraphicsRootSignature(modelMaterialData->rootSignature->GetRootSignature());
+
+	// プリミティブ形状の設定コマンド
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
+
+	// 頂点バッファビューの設定コマンド
+	cmdList->IASetVertexBuffers(0, 1, &vbView);
+
+	//インデックスバッファビューの設定コマンド
+	cmdList->IASetIndexBuffer(&ibView);
+
+	// 定数バッファビュー(CBV)の設定コマンド
+	cmdList->SetGraphicsRootConstantBufferView(0, transform->GetconstBuff()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, constBuffMaterial->GetAddress());
+	light->SetConstBufferView(cmdList.Get(), 2);
+	cmdList->SetGraphicsRootConstantBufferView(3, constBuffVelocity->GetAddress());
+
+	// SRVヒープの設定コマンド
+	cmdList->SetDescriptorHeaps(1, textureData.srvHeap.GetAddressOf());
+
+	// SRVヒープの先頭にあるSRVをルートパラメータ2番に設定
+	cmdList->SetGraphicsRootDescriptorTable(4, textureData.gpuHandle);
 
 	// 描画コマンド
 	cmdList->DrawIndexedInstanced(maxIndex, 1, 0, 0, 0);
@@ -263,15 +328,14 @@ void objModel::LoadTexture(const std::string& directoryPath, const std::string& 
 {
 	std::string filepath = directoryPath + "/" + filename;
 
-	wchar_t wfilepath[128]{};
-	MultiByteToWideChar(CP_ACP, 0, filepath.c_str(), -1, wfilepath, _countof(wfilepath));
-
-	textureData = TextureManager::GetInstance()->LoadTexture(wfilepath);
+	textureData = TextureManager::GetInstance()->LoadTexture(filepath);
 }
 
-void objModel::Initialize()
+void objModel::Initialize(const char* filePath, bool smoothing)
 {
 	ModelInitialize();
+
+	Create(filePath, smoothing);
 }
 
 void objModel::CalculateSmoothedVertexNormals()
@@ -280,18 +344,18 @@ void objModel::CalculateSmoothedVertexNormals()
 	for (;itr != smoothData.end(); itr++)
 	{
 		//各面用の共通点コレクション
-		std::vector<uint16_t>& v = itr->second;
+		std::vector<uint32_t>& v = itr->second;
 		//全頂点の法線を平均する
-		EngineMathF::Vector3 normal = {};
-		for (uint16_t index : v)
+		AliceMathF::Vector3 normal = {};
+		for (uint32_t index : v)
 		{
-			normal += EngineMathF::Vector3{vertices[index].normal.x, vertices[index].normal.y, vertices[index].normal.z};
+			normal += AliceMathF::Vector3{vertices[index].normal.x, vertices[index].normal.y, vertices[index].normal.z};
 		}
 
 		normal = normal / static_cast<float>(v.size());
-		normal.normal();
+		normal.Normal();
 		//共通法線を使用する全ての頂点データに書き込む
-		for (uint16_t index : v)
+		for (uint32_t index : v)
 		{
 			vertices[index].normal = { normal.x,normal.y,normal.z };
 		}

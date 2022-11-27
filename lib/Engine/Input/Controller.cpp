@@ -1,7 +1,7 @@
 #include "Controller.h"
 
 
-bool Controller::StickInDeadZone(EngineMathF::Vector2& Thumb, const EngineMathF::Vector2& DeadRate)
+bool Controller::StickInDeadZone(AliceMathF::Vector2& Thumb, const AliceMathF::Vector2& DeadRate)
 {
 	bool x = false;
 	bool y = false;
@@ -81,20 +81,20 @@ bool Controller::ButtonTrigger(ControllerButton button)
 	}
 }
 
-bool Controller::StickTrigger(ControllerStick stickInput, const float& deadRange, const EngineMathF::Vector2& deadRate)
+bool Controller::StickTrigger(ControllerStick stickInput, const float& deadRange, const AliceMathF::Vector2& deadRate)
 {
-	EngineMathF::Vector2 oldVec;
-	EngineMathF::Vector2 vec;
+	AliceMathF::Vector2 oldVec;
+	AliceMathF::Vector2 vec;
 	bool isLeftStick = stickInput <= L_RIGHT;
 	if (isLeftStick)
 	{
-		oldVec = EngineMathF::Vector2(oldXinputState.Gamepad.sThumbLX, oldXinputState.Gamepad.sThumbLY);
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
+		oldVec = AliceMathF::Vector2(oldXinputState.Gamepad.sThumbLX, oldXinputState.Gamepad.sThumbLY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
 	}
 	else
 	{
-		oldVec = EngineMathF::Vector2(oldXinputState.Gamepad.sThumbRX, oldXinputState.Gamepad.sThumbRY);
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
+		oldVec = AliceMathF::Vector2(oldXinputState.Gamepad.sThumbRX, oldXinputState.Gamepad.sThumbRY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
 	}
 
 	if (!StickInDeadZone(oldVec, deadRate))
@@ -149,18 +149,18 @@ bool Controller::ButtonInput(ControllerButton button)
 	}
 }
 
-bool Controller::StickInput(ControllerStick stickInput, const float& deadRange, const EngineMathF::Vector2& deadRate)
+bool Controller::StickInput(ControllerStick stickInput, const float& deadRange, const AliceMathF::Vector2& deadRate)
 {
-	EngineMathF::Vector2 vec;
+	AliceMathF::Vector2 vec;
 	bool isLeftStick = stickInput <= L_RIGHT;
 
 	if (isLeftStick)
 	{
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
 	}
 	else
 	{
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
 	}
 
 	if (StickInDeadZone(vec, deadRate))return false;
@@ -204,21 +204,21 @@ bool Controller::ButtonOffTrigger(ControllerButton button)
 	}
 }
 
-bool Controller::StickOffTrigger(ControllerStick stickInput, const float& deadRange, const EngineMathF::Vector2& deadRate)
+bool Controller::StickOffTrigger(ControllerStick stickInput, const float& deadRange, const AliceMathF::Vector2& deadRate)
 {
-	EngineMathF::Vector2 oldVec;
-	EngineMathF::Vector2 vec;
+	AliceMathF::Vector2 oldVec;
+	AliceMathF::Vector2 vec;
 	bool isLeftStick = stickInput <= L_RIGHT;
 
 	if (isLeftStick)
 	{
-		oldVec = EngineMathF::Vector2(oldXinputState.Gamepad.sThumbLX, oldXinputState.Gamepad.sThumbLY);
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
+		oldVec = AliceMathF::Vector2(oldXinputState.Gamepad.sThumbLX, oldXinputState.Gamepad.sThumbLY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbLX, xinputState.Gamepad.sThumbLY);
 	}
 	else
 	{
-		oldVec = EngineMathF::Vector2(oldXinputState.Gamepad.sThumbRX, oldXinputState.Gamepad.sThumbRY);
-		vec = EngineMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
+		oldVec = AliceMathF::Vector2(oldXinputState.Gamepad.sThumbRX, oldXinputState.Gamepad.sThumbRY);
+		vec = AliceMathF::Vector2(xinputState.Gamepad.sThumbRX, xinputState.Gamepad.sThumbRY);
 	}
 
 	if (!StickInDeadZone(oldVec, deadRate))
@@ -257,17 +257,17 @@ bool Controller::StickOffTrigger(ControllerStick stickInput, const float& deadRa
 	return result;
 }
 
-EngineMathF::Vector2 Controller::GetLeftStickVec(const EngineMathF::Vector2& deadRate)
+AliceMathF::Vector2 Controller::GetLeftStickVec(const AliceMathF::Vector2& deadRate)
 {
 
-	EngineMathF::Vector2 result(static_cast<float>(xinputState.Gamepad.sThumbLX), static_cast<float>(-xinputState.Gamepad.sThumbLY));
+	AliceMathF::Vector2 result(static_cast<float>(xinputState.Gamepad.sThumbLX), static_cast<float>(-xinputState.Gamepad.sThumbLY));
 	StickInDeadZone(result, deadRate);
 	return result / STICK_INPUT_MAX;
 }
 
-EngineMathF::Vector2 Controller::GetRightStickVec(const EngineMathF::Vector2& deadRate)
+AliceMathF::Vector2 Controller::GetRightStickVec(const AliceMathF::Vector2& deadRate)
 {
-	EngineMathF::Vector2 result(static_cast<float>(xinputState.Gamepad.sThumbRX), static_cast<float>(-xinputState.Gamepad.sThumbRY));
+	AliceMathF::Vector2 result(static_cast<float>(xinputState.Gamepad.sThumbRX), static_cast<float>(-xinputState.Gamepad.sThumbRY));
 	StickInDeadZone(result, deadRate);
 	return result / STICK_INPUT_MAX;;
 }

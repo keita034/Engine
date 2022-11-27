@@ -1,7 +1,6 @@
 #include "Vector.h"
-namespace EngineMathF
+namespace AliceMathF
 {
-
 	const Vector4 operator+(const Vector3& v1, const Vector4& v2)
 	{
 		Vector4 tmp(v2);
@@ -29,7 +28,7 @@ namespace EngineMathF
 	}
 
 	// ベクトルと行列の掛け算
-	Vector3 Vec3Mat4Mul(Vector3& vec, Matrix4& mat)
+	Vector3 Vec3Mat4Mul(const Vector3& vec, const Matrix4& mat)
 	{
 		Vector3 retVec = {};
 
@@ -42,7 +41,7 @@ namespace EngineMathF
 		return retVec;
 	}
 
-	Vector3& Vec3Mat4MulWdiv(Vector3& vec, Matrix4& mat)
+	Vector3& Vec3Mat4MulWdiv(const Vector3& vec, const Matrix4& mat)
 	{
 		Vector4 retVec = {};
 
@@ -60,7 +59,7 @@ namespace EngineMathF
 	}
 
 	// ベクトルと行列の掛け算
-	Vector4 Vec4Mat4Mul(Vector4& vec, Matrix4& mat)
+	Vector4 Vec4Mat4Mul(const Vector4& vec, const Matrix4& mat)
 	{
 		Vector4 retVec = {};
 
@@ -71,5 +70,16 @@ namespace EngineMathF
 		retVec.z = vec.x * mat.m[0][2] + vec.y * mat.m[1][2] + vec.z * mat.m[2][2] + vec.w * mat.m[3][2];
 
 		return retVec;
+	}
+
+	Vector3 Vector3Lerp(const Vector3& src1, const Vector3& src2, float t)
+	{
+		Vector3 dest;
+
+		dest.x = src1.x + (src2.x - src1.x) * t;
+		dest.y = src1.y + (src2.y - src1.y) * t;
+		dest.z = src1.z + (src2.z - src1.z) * t;
+
+		return dest;
 	}
 }

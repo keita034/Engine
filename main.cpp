@@ -12,16 +12,18 @@
 #include"Camera.h"
 #include"GameScene.h"
 #include"FPS.h"
-#include"ModelPipeLine.h"
 #include"TextureManager.h"
 #include"DefaultMaterial.h"
 #include"AudioManager.h"
+#include"FbxLoader.h"
+#include"PostEffect.h"
+
 //pragma comment
 
 
 //using namespace
 
-using namespace EngineMathF;
+using namespace AliceMathF;
 
 #ifdef _DEBUG
 int main()
@@ -53,31 +55,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Mesh* mesh = Mesh::GetInstance();
 	Mesh3D* mesh3D = Mesh3D::GetInstance();
 
-	ModelPipeLine* pipeline = ModelPipeLine::GetInstance();
-	pipeline->Initialize();
-
 	TextureManager* textureManager = TextureManager::GetInstance();
 	textureManager->Initialize();
+
+	DefaultMaterial::GetDefaultMaterial()->Initialize();
+	//•`‰æ‰Šú‰»ˆ—‚±‚±‚Ü‚Å
+
+	//‚»‚Ì‘¼‰Šú‰»‚±‚±‚©‚ç
 
 	AudioManager* audioManager = AudioManager::GetInstance();
 	audioManager->Initialize();
 
-	DefaultMaterialInitialize();
-	//•`‰æ‰Šú‰»ˆ—‚±‚±‚Ü‚Å
-
 	Input* input = Input::GetInstance();
 	input->Initialize();
 
+	FPS* fps = new FPS;
+
+	FbxLoader::GetInstance()->Initialize();
+
+	std::unique_ptr<PostEffect> postEffect = std::make_unique<PostEffect>();
+	postEffect->PostInitialize();
+
+	//‚»‚Ì‘¼‰Šú‰»‚±‚±‚Ü‚Å
+
+	//ƒV[ƒ“‚Ì‰Šú‰»
 	GameScene* gameScene = GameScene::GetInstance();
 	gameScene->Initialize();
-
-	FPS* fps = new FPS;
 
 	//ƒQ[ƒ€ƒ‹[ƒv
 	while (true)
 	{
 #ifdef _DEBUG
-		printf("\x1B[2J");
+		//printf("\x1B[2J");
 #endif
 		fps->FpsControlBegin();
 
@@ -87,7 +96,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		//€”õˆ—
-		DirectX12Core->BeginDraw();//•`‰æ€”õ
 		mesh->DrawReset();
 		mesh3D->DrawReset();
 
@@ -101,9 +109,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		gameScene->Update();
 
 		//•`‰æˆ—
+		postEffect->PreDrawScen();
 
 		gameScene->Draw();
 
+		postEffect->PostDrawScen();
+
+		DirectX12Core->BeginDraw();//•`‰æ€”õ
+		postEffect->PostDraw();
 		//DirectX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚Ü‚Å
 
 		DirectX12Core->EndDraw();//•`‰æŒãˆ—
@@ -116,10 +129,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		fps->FpsControlEnd();
 	}
 
-
+	FbxLoader::GetInstance()->Finalize();
 	windowsApp->Break();
 	DirectX12Core->Destroy();
-	pipeline->Destroy();
 	mesh->Destroy();
 	mesh3D->Destroy();
 	textureManager->Destroy();

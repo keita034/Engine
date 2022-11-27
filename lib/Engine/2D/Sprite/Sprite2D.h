@@ -1,18 +1,10 @@
 #pragma once
-//#DirectXのやつ
 #include"ErrorException.h"
 
-//自作.h
-#include"EngineMathUtility.h"
-#include"WindowsApp.h"
-#include"DirectX12Core.h"
+#include"AliceMathUtility.h"
 #include"Sprite.h"
 #include"DefaultMaterial.h"
-//pragma comment
-
-
-
-//using namespace
+#include"AliceUtility.h"
 
 class Sprite2D : public Sprite
 {
@@ -23,16 +15,32 @@ public:
 
 	Sprite2D() = default;
 	~Sprite2D() = default;
+	
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="textureData">テクスチャデータ</param>
+	virtual void Initialize(const TextureData& textureData)override;
 
-	//初期化
-	virtual void Initialize()override;
+	/// <summary>
+	/// 描画
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	/// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void Draw(Transform& transform,BlendMode blend = BlendMode::AX_BLENDMODE_ALPHA, Material* material = nullptr)override;
 
-	///<summary>
-	///描画
-	///</summary>
-	virtual void Draw(TextureData& textureData, Transform& transform, Material* material = &DEFAULT_SPRITE2D_MATERIAL)override;
-
-	virtual void AnimationDraw(TextureData& textureData, Transform& transform, uint16_t radiusX, uint16_t radiusY, float& frame, float frameDiv, Material* material = &DEFAULT_SPRITE2D_MATERIAL);
+	/// <summary>
+	/// アニメーション描画
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="radiusX">アニメーション画像の一枚分の横幅</param>
+	/// <param name="radiusY">アニメーション画像の一枚分の縦幅</param>
+	/// <param name="frame">アニメーションフレーム</param>
+	/// <param name="frameDiv">アニメーションフレームの最大値</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	/// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void AnimationDraw(Transform& transform, uint16_t radiusX, uint16_t radiusY, float& frame, float frameDiv, BlendMode blend = BlendMode::AX_BLENDMODE_ALPHA, Material* material = nullptr)override;
 
 private:
 

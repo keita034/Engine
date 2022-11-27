@@ -4,7 +4,7 @@
 ///当たり判定プリミティブ
 /// </summary>
 
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"Transform.h"
 
 class BaseCollsion
@@ -49,7 +49,7 @@ class Sphere : public BaseCollsion
 protected:
 
 	//中心座標
-	EngineMathF::Vector4 center = { 0.0f,0.0f,0.0f,1.0f };
+	AliceMathF::Vector4 center = { 0.0f,0.0f,0.0f,1.0f };
 	//半径
 	float radius = 1.0f;
 private:
@@ -62,9 +62,9 @@ public:
 	//半径をを設定
 	void SetRadius(float radius_);
 	//中心座標を取得
-	const EngineMathF::Vector4& GetCenter();
+	const AliceMathF::Vector4& GetCenter();
 	//中心座標をを設定
-	void SetCenter(EngineMathF::Vector4& center_);
+	void SetCenter(AliceMathF::Vector4& center_);
 	//衝突時に呼ばれる関数
 	virtual void OnCollision()
 	{
@@ -78,7 +78,7 @@ class Plane : public BaseCollsion
 {
 protected:
 	//法線ベクトル
-	EngineMathF::Vector4 normal = { 0.0f,1.0f,0.0f,0.0f };
+	AliceMathF::Vector4 normal = { 0.0f,1.0f,0.0f,0.0f };
 	//原点点(0,0,0)からの距離
 	float distance = 0.0f;
 private:
@@ -89,9 +89,9 @@ public:
 	//原点点(0,0,0)からの距離を設定
 	void SetDistance(float distance_);
 	//法線ベクトルを取得
-	const EngineMathF::Vector4& GetNormal();
+	const AliceMathF::Vector4& GetNormal();
 	//法線ベクトルを設定
-	void SetNormal(EngineMathF::Vector4& normal_);
+	void SetNormal(AliceMathF::Vector4& normal_);
 	//衝突時に呼ばれる関数
 	virtual void OnCollision()
 	{
@@ -106,11 +106,11 @@ class Triangle : public BaseCollsion
 protected:
 
 	//頂点座標3つ
-	EngineMathF::Vector4 p0;
-	EngineMathF::Vector4 p1;
-	EngineMathF::Vector4 p2;
+	AliceMathF::Vector4 p0;
+	AliceMathF::Vector4 p1;
+	AliceMathF::Vector4 p2;
 	//法線ベクトル
-	EngineMathF::Vector4 normal;
+	AliceMathF::Vector4 normal;
 
 public:
 	/// <summary>
@@ -119,24 +119,24 @@ public:
 	void ComputeNormal();
 
 	//頂点座標1つ目取得
-	const EngineMathF::Vector4& GetP0();
+	const AliceMathF::Vector4& GetP0();
 	//頂点座標1つ目を設定
-	void SetP0(EngineMathF::Vector4& p0_);
+	void SetP0(AliceMathF::Vector4& p0_);
 
 	//頂点座標2つ目を取得
-	const EngineMathF::Vector4& GetP1();
+	const AliceMathF::Vector4& GetP1();
 	//頂点座標2つ目を設定
-	void SetP1(EngineMathF::Vector4& p1_);
+	void SetP1(AliceMathF::Vector4& p1_);
 
 	//頂点座標3つ目を取得
-	const EngineMathF::Vector4& GetP2();
+	const AliceMathF::Vector4& GetP2();
 	//頂点座標3つ目を設定
-	void SetP2(EngineMathF::Vector4& p2_);
+	void SetP2(AliceMathF::Vector4& p2_);
 
 	//法線ベクトルを取得
-	const EngineMathF::Vector4& GetNormal();
+	const AliceMathF::Vector4& GetNormal();
 	//法線ベクトルを設定
-	void SetNormal(EngineMathF::Vector4& normal_);
+	void SetNormal(AliceMathF::Vector4& normal_);
 	//衝突時に呼ばれる関数
 	virtual void OnCollision()
 	{
@@ -151,21 +151,21 @@ class Ray : public BaseCollsion
 protected:
 
 	//始点座標
-	EngineMathF::Vector4 start = { 0,0,0,1 };
+	AliceMathF::Vector4 start = { 0,0,0,1 };
 	//方向
-	EngineMathF::Vector4 dir = { 1,0,0,0 };
+	AliceMathF::Vector4 dir = { 1,0,0,0 };
 
 public:
 
 	//始点座標を取得
-	const EngineMathF::Vector4& GetStart();
+	const AliceMathF::Vector4& GetStart();
 	//始点座標を設定
-	void SetStart(EngineMathF::Vector4& start_);
+	void SetStart(AliceMathF::Vector4& start_);
 
 	//方向を取得
-	const EngineMathF::Vector4& GetDir();
+	const AliceMathF::Vector4& GetDir();
 	//方向を設定
-	void SetDir(EngineMathF::Vector4& dir_);
+	void SetDir(AliceMathF::Vector4& dir_);
 	//衝突時に呼ばれる関数
 	virtual void OnCollision()
 	{
@@ -189,15 +189,15 @@ public:
 class OBB : public BaseCollsion
 {
 protected:
-	EngineMathF::Vector3 center = {};//位置
-	EngineMathF::Vector3 normaDirect[3];//方向ベクトル
+	AliceMathF::Vector3 center = {};//位置
+	AliceMathF::Vector3 normaDirect[3];//方向ベクトル
 	float Length[3]{};// 各軸方向の長さ
 private:
 	char PADING[4]{};
 public:
-	const EngineMathF::Vector3 GetDirect(uint16_t elem);//指定軸番号の方向ベクトルを取得
+	const AliceMathF::Vector3 GetDirect(uint16_t elem);//指定軸番号の方向ベクトルを取得
 	const float GetLen(uint16_t elem);// 指定軸方向の長さを取得
-	const EngineMathF::Vector3 GetCenter();// 位置を取得
+	const AliceMathF::Vector3 GetCenter();// 位置を取得
 	//衝突時に呼ばれる関数
 	virtual void OnCollision()
 	{

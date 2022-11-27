@@ -1,6 +1,9 @@
 #pragma once
 #include"ErrorException.h"
 
+/// <summary>
+/// ウィンドウクラス
+/// </summary>
 class WindowsApp
 {
 private:
@@ -10,10 +13,20 @@ private:
 	int windowWidth = 1280;//横幅
 	int windowHeight = 720;//縦幅
 
-
-
 public:
-	//シングルトンインスタンスの取得
+	
+	//サイズ取得用構造体
+	struct WindowsSize
+	{
+		//横幅
+		int width;
+		//縦幅
+		int height;
+	};
+
+	/// <summary>
+	/// シングルトンインスタンスの取得
+	/// </summary>
 	static WindowsApp* GetInstance();
 
 	/// <summary>
@@ -23,18 +36,31 @@ public:
 	/// <param name="width">ウィンドウ横幅</param>
 	/// <param name="height">ウィンドウ横幅</param>
 	void CreatWindow(const wchar_t* title = L"DirectXGame", int width = 1280, int height = 720);
+	
+	/// <summary>
+	/// メッセージ処理
+	/// </summary>
 	bool MessageWindow();
+
+	/// <summary>
+	/// 後始末
+	/// </summary>
 	void Break();
 
-	//セッター
-	void SetW(WNDCLASSEX W);
-	void SetHwnd(HWND Hwnd);
+	/// <summary>
+	/// ウィンドウクラスを取得
+	/// </summary>
+	WNDCLASSEX GetWndclassex();
 
-	//ゲッター
-	WNDCLASSEX GetW();
+	/// <summary>
+	/// ハンドルを取得
+	/// </summary>
 	HWND GetHwnd();
-	int GetWindowHeight();
-	int GetWindowWidth();
+
+	/// <summary>
+	/// ウィンドサイズを取得
+	/// </summary>
+	WindowsSize GetWindowSize();
 
 private:
 	//コンストラクタ・デストラクタ

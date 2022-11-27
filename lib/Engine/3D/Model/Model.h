@@ -1,12 +1,14 @@
 #pragma once
 #include"ErrorException.h"
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"Camera.h"
-#include"ModelPipeLine.h"
 #include"DirectX12Core.h"
 #include"Light.h"
 #include"Transform.h"
 #include"Material.h"
+#include"ConstantBuffer.h"
+#include"VertexBuffer.h"
+#include"IndexBuffer.h"
 
 enum class ModelShape
 {
@@ -27,53 +29,48 @@ enum ShaderType
 
 };
 
+class PrimitiveModel;
+class objModel;
+
 class Model
 {
 protected:
 
 	TextureData textureData;
 
-	HRESULT result;
-	char PADDING[4];
+	HRESULT result = S_OK;
+	char PADDING[4]={};
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
 
 	//頂点バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertBuff;
-	//頂点マップ
-	PosNormalUv* vertMap;
-	//頂点バッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vbView{};
-	//インデックスバッファの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuff;
-	////インデックスバッファをマッピング
-	uint16_t* indexMap;
-	//インデックスバッファビューの作成
-	D3D12_INDEX_BUFFER_VIEW ibView{};
+	std::unique_ptr<VertexBuffer> vertexBuffer;
+	//インデックスバッファ
+	std::unique_ptr<IndexBuffer> indexBuffer;
 	//テクスチャバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> texBuff;
-	char PADDING1[4];
+	char PADDING1[4]={};
 	//インデックスの数
-	UINT maxIndex;
-	char PADDING2[4];
+	UINT maxIndex = 0u;;
+	char PADDING2[4]={};
 	//頂点の数
-	UINT maxVert;
+	UINT maxVert = 0u;
 	//ワールド行列
-	EngineMathF::Matrix4 matWorld;
+	AliceMathF::Matrix4 matWorld;
 	//頂点データ
 	std::vector<PosNormalUv>vertices;
 	//頂点インデックス
-	std::vector<uint16_t> indices;
+	std::vector<uint32_t> indices;
 	//頂点法線スムージング用データ
-	std::unordered_map<uint16_t, std::vector<uint16_t>>smoothData;
+	std::unordered_map<uint32_t, std::vector<uint32_t>>smoothData;
 	//ライト
 	static Light* light;
 	//マテリアル
 	ModelMaterial modelMaterial{};
 	//定数バッファマテリアル
-	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffMaterial;
-	//定数バッファマテリアルのマッピング用ポインタ
-	ConstBuffDataMaterial* constMapMaterial = nullptr;
+	std::unique_ptr<ConstantBuffer> constBuffMaterial;
+	std::unique_ptr<ConstantBuffer> constBuffVelocity;
+	Material* modelMaterialData;
 
 
 public:
@@ -82,7 +79,7 @@ public:
 	/// ワールド行列の取得
 	/// </summary>
 	/// <returns>ワールド行列</returns>
-	virtual EngineMathF::Matrix4& GetMatWorld();
+	virtual AliceMathF::Matrix4& GetMatWorld();
 
 	/// <summary>
 	/// 頂点座標を取得
@@ -94,7 +91,7 @@ public:
 	/// インデックスを取得
 	/// </summary>
 	/// <returns>インデックス座標配列</returns>
-	virtual const std::vector<uint16_t>GetIndices();
+	virtual const std::vector<uint32_t>GetIndices();
 
 	/// <summary>
 	/// ライトのセット
@@ -105,11 +102,18 @@ public:
 	Model() = default;
 	virtual ~Model()= default;
 
-	virtual void Initialize() = 0;
-
 	virtual void Draw(Transform* transform,Material* material) = 0;
 
+	static PrimitiveModel* CreatePrimitiveModel(ModelShape type);
+
+	static objModel* CreateObjModel(const char* filePath, bool smoothing = false);
+
+
 protected:
+
+	virtual void Initialize(ModelShape shape) = 0;
+
+	virtual void Initialize(const char* filePath, bool smoothing) = 0;
 
 	/// <summary>
 	/// オブジェクト生成

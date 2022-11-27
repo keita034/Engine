@@ -1,5 +1,7 @@
 #pragma once
-namespace EngineMathF
+#include"ErrorException.h"
+
+namespace AliceMathF
 {
 	//4次元ベクトル
 	class Vector4
@@ -15,12 +17,14 @@ namespace EngineMathF
 		Vector4();//零ベクトル
 		Vector4(float x, float y, float z, float w);//成分を指定して生成
 
-		float length()const;//ノルムを求める
-		float lengthSquared()const;
-		Vector4& normalization()const;//正規化する
-		Vector4& normal();//正規化する
-		float dot(const Vector4& v)const;//内積を求める
-		Vector4 cross(const Vector4& v)const;//外積を求める
+		Vector4(aiQuaternion& aiQuaternion);//成分を指定して生成
+
+		float Length()const;//ノルムを求める
+		float LengthSquared()const;
+		Vector4 Normalization()const;//正規化する
+		Vector4& Normal();//正規化する
+		float Dot(const Vector4& v)const;//内積を求める
+		Vector4 Cross(const Vector4& v)const;//外積を求める
 
 		//単項演算子オーバーロード
 		Vector4 operator+() const;

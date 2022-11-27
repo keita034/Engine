@@ -1,5 +1,7 @@
 #pragma once
-namespace EngineMathF
+#include"ErrorException.h"
+
+namespace AliceMathF
 {
 	//3次元ベクトル
 	class Vector3
@@ -13,12 +15,13 @@ namespace EngineMathF
 		//コンストラクタ
 		Vector3();//零ベクトル
 		Vector3(float x, float y, float z);//成分を指定して生成
+		Vector3(aiVector3D& aiVector);
 
-		float length()const;//ノルムを求める
-		Vector3& normalization()const;//正規化する
-		Vector3& normal();//正規化する
-		float dot(const Vector3& v)const;//内積を求める
-		Vector3 cross(const Vector3& v)const;//外積を求める
+		float Length()const;//ノルムを求める
+		Vector3 Normalization()const;//正規化する
+		Vector3& Normal();//正規化する
+		float Dot(const Vector3& v)const;//内積を求める
+		Vector3 Cross(const Vector3& v)const;//外積を求める
 
 		//単項演算子オーバーロード
 		Vector3 operator+() const;
@@ -46,7 +49,7 @@ namespace EngineMathF
 	/// <summary>
 	/// 符号を反転
 	/// </summary>
-	Vector3 Negate(Vector3& vec);
+	Vector3 Negate(const Vector3& vec);
 
 
 }

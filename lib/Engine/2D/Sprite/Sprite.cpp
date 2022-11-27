@@ -1,24 +1,22 @@
 #include "Sprite.h"
 #include "DirectX12Core.h"
-
+#include"Sprite2D.h"
+#include"Sprite3D.h"
 
 void Sprite::SpriteInitialize()
 {
-	device = DirectX12Core::GetInstance()->GetDevice();
-	cmdList = DirectX12Core::GetInstance()->GetCommandList();
+	device = DirectX12Core::GetDeviceSta();
+	cmdList = DirectX12Core::GetCommandListSta();
 }
 
-void Sprite::SpriteDraw(TextureData& textureData, Transform& transform, Material* material)
+void Sprite::SpriteDraw(Transform& transform, Material* material)
 {
-	//カラー
-	for (int i = 0; i < 4; i++)
-	{
-		vertMap[i].color = textureData.color;
-	}
+	D3D12_VERTEX_BUFFER_VIEW vbView = vertexBuffer->GetView();
+	D3D12_INDEX_BUFFER_VIEW ibView = indexBuffer->GetView();
 
 	// パイプラインステートとルートシグネチャの設定コマンド
-	cmdList->SetPipelineState(material->pipelineState.Get());
-	cmdList->SetGraphicsRootSignature(material->rootSignature.Get());
+	cmdList->SetPipelineState(material->pipelineState->GetPipelineState());
+	cmdList->SetGraphicsRootSignature(material->rootSignature->GetRootSignature());
 
 	// プリミティブ形状の設定コマンド
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 三角形リスト
@@ -33,10 +31,10 @@ void Sprite::SpriteDraw(TextureData& textureData, Transform& transform, Material
 	cmdList->SetGraphicsRootConstantBufferView(0, transform.GetconstBuff()->GetGPUVirtualAddress());
 
 	// SRVヒープの設定コマンド
-	cmdList->SetDescriptorHeaps(1, textureData.srvHeap.GetAddressOf());
+	cmdList->SetDescriptorHeaps(1, texture.srvHeap.GetAddressOf());
 
 	//// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
-	cmdList->SetGraphicsRootDescriptorTable(1, textureData.gpuHandle);
+	cmdList->SetGraphicsRootDescriptorTable(1, texture.gpuHandle);
 
 	// 描画コマンド
 	cmdList->DrawIndexedInstanced(6, 1, 0, 0, 0);
@@ -44,77 +42,53 @@ void Sprite::SpriteDraw(TextureData& textureData, Transform& transform, Material
 
 void Sprite::CreatVertexIndexBuffer()
 {
-	// ヒープ設定
-	D3D12_HEAP_PROPERTIES heapProp{};
-	// リソース設定
-	D3D12_RESOURCE_DESC resDesc{};
-
-	// 頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
-	UINT sizeVB = static_cast<UINT>(sizeof(PosUvColor) * 4);
-
-	// 頂点バッファの設定
-	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD; // GPUへの転送用
-	// リソース設定
-	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resDesc.Width = sizeVB; // 頂点データ全体のサイズ
-	resDesc.Height = 1;
-	resDesc.DepthOrArraySize = 1;
-	resDesc.MipLevels = 1;
-	resDesc.SampleDesc.Count = 1;
-	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	// 頂点バッファの生成
-	result = device->CreateCommittedResource(
-		&heapProp, // ヒープ設定
-		D3D12_HEAP_FLAG_NONE,
-		&resDesc, // リソース設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(vertBuff.ReleaseAndGetAddressOf()));
-	assert(SUCCEEDED(result));
-
-	// GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
-	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
-	assert(SUCCEEDED(result));
-
-	// 頂点バッファビューの作成
-	// GPU仮想アドレス
-	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
-	// 頂点バッファのサイズ
-	vbView.SizeInBytes = sizeVB;
-	// 頂点１つ分のデータサイズ
-	vbView.StrideInBytes = sizeof(PosUvColor);
-
-	// インデックスデータのサイズ
-	UINT sizeIB = static_cast<UINT>(sizeof(uint16_t) * 6);
-	// 頂点バッファの設定
-	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD; // GPUへの転送用
-	//リソース設定
-	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resDesc.Width = sizeIB;//インデックス情報が入る分のサイズ
-	resDesc.Height = 1;
-	resDesc.DepthOrArraySize = 1;
-	resDesc.MipLevels = 1;
-	resDesc.SampleDesc.Count = 1;
-	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	//頂点バッファの生成
+	vertexBuffer = std::make_unique<VertexBuffer>();
+	vertexBuffer->Create(4, sizeof(PosUvColor));
 
 	//インデックスバッファの生成
-	result = device->CreateCommittedResource(
-		&heapProp,//ヒープ設定
-		D3D12_HEAP_FLAG_NONE,
-		&resDesc,//リソース設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(indexBuff.ReleaseAndGetAddressOf()));
+	indexBuffer = std::make_unique<IndexBuffer>();
+	indexBuffer->Create(6);
+}
 
-	//インデックスバッファをマッピング
-	result = indexBuff->Map(0, nullptr, (void**)&indexMap);
-	//マッピング解除
-	indexBuff->Unmap(0, nullptr);
+void Sprite::SetAnchorPoint(const AliceMathF::Vector2& point)
+{
+	anchorPoint = point;
+}
 
-	//インデックスバッファビューの作成
-	ibView.BufferLocation = indexBuff->GetGPUVirtualAddress();
-	ibView.Format = DXGI_FORMAT_R16_UINT;
-	ibView.SizeInBytes = sizeIB;
-	assert(SUCCEEDED(result));
+void Sprite::SetFlipFlag(bool isFlipX, bool isFlipY)
+{
+	flipX = isFlipX;
+	flipY = isFlipY;
+}
+
+void Sprite::SetColor(const AliceMathF::Vector4& color)
+{
+	texture.color = color;
+}
+
+void Sprite::SetTextureTrimmingRange(const AliceMathF::Vector2& leftTop, const AliceMathF::Vector2& rightDown)
+{
+	trimmingRange = { leftTop.x,leftTop.y,rightDown.x,rightDown.y };
+}
+
+void Sprite::SetTex(const TextureData& textureData)
+{
+	texture = textureData;
+	trimmingRange.z = static_cast<float>(texture.width);
+	trimmingRange.w = static_cast<float>(texture.height);
+}
+
+Sprite2D* Sprite::Create2DSprite(const TextureData& textureData)
+{
+	Sprite2D* s2D = new Sprite2D;
+	s2D->Initialize(textureData);
+	return s2D;
+}
+
+Sprite3D* Sprite::Create3DSprite(const TextureData& textureData)
+{
+	Sprite3D* s3D = new Sprite3D;
+	s3D->Initialize(textureData);
+	return s3D;
 }

@@ -87,19 +87,9 @@ void WindowsApp::Break()
 	UnregisterClass(wndclassex.lpszClassName, wndclassex.hInstance);
 }
 
-WNDCLASSEX WindowsApp::GetW()
+WNDCLASSEX WindowsApp::GetWndclassex()
 {
 	return wndclassex;
-}
-
-void WindowsApp::SetW(WNDCLASSEX W)
-{
-	wndclassex = W;
-}
-
-void WindowsApp::SetHwnd(HWND Hwnd)
-{
-	hwnd = Hwnd;
 }
 
 HWND WindowsApp::GetHwnd()
@@ -107,12 +97,7 @@ HWND WindowsApp::GetHwnd()
 	return hwnd;
 }
 
-int WindowsApp::GetWindowHeight()
+WindowsApp::WindowsSize WindowsApp::GetWindowSize()
 {
-	return windowHeight;
-}
-
-int WindowsApp::GetWindowWidth()
-{
-	return windowWidth;
+	return { windowWidth,windowHeight };
 }

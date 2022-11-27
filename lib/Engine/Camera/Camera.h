@@ -1,6 +1,6 @@
 #pragma once
-#include"EngineMathUtility.h"
-#include"WindowsApp.h"
+#include"AliceMathUtility.h"
+
 
 ///<summary>
 ///射影行列の更新方法。
@@ -16,31 +16,31 @@ class Camera
 public:
 
 	//視点座標
-	EngineMathF::Vector3 eye = { 0.0f,0.0f,-50.0f };
+	AliceMathF::Vector3 eye = { 0.0f,0.0f,-50.0f };
 	//注視点座標
-	EngineMathF::Vector3 target = { 0.0f,0.0f,0.0f };
+	AliceMathF::Vector3 target = { 0.0f,0.0f,0.0f };
 	//上方向ベクトル
-	EngineMathF::Vector3 up = { 0.0f,1.0f,0.0f };
+	AliceMathF::Vector3 up = { 0.0f,1.0f,0.0f };
 
 private:
 
 	//視点座標
-	EngineMathF::Vector3 oldEye = eye;
+	AliceMathF::Vector3 oldEye = eye;
 	//注視点座標
-	EngineMathF::Vector3 oldTarget = target;
+	AliceMathF::Vector3 oldTarget = target;
 	//上方向ベクトル
-	EngineMathF::Vector3 oldUp = up;
+	AliceMathF::Vector3 oldUp = up;
 
 	//ビュー行列
-	EngineMathF::Matrix4 viewMatrix;
+	AliceMathF::Matrix4 viewMatrix;
 	//プロジェクション行列
-	EngineMathF::Matrix4 projectionMatrix;
+	AliceMathF::Matrix4 projectionMatrix;
 	//ビュープロジェクション行列
-	EngineMathF::Matrix4 viewProjectionMatrix;
+	AliceMathF::Matrix4 viewProjectionMatrix;
 	//ビュー行列の逆行列
-	EngineMathF::Matrix4 viewMatrixInv;
+	AliceMathF::Matrix4 viewMatrixInv;
 	//カメラの回転行列
-	EngineMathF::Matrix4 cameraRotation;
+	AliceMathF::Matrix4 cameraRotation;
 
 	//画角(ラジアン度)
 	float fovAngleY = 0.0;
@@ -69,9 +69,14 @@ private:
 	float tgtToPosLen = 0.0f;
 
 	//カメラの正面ベクトル
-	EngineMathF::Vector3 forward = { 0.0f,0.0f,0.0f };
+	AliceMathF::Vector3 forward = { 0.0f,0.0f,0.0f };
 
 	UpdateProjMatrixFunc matrixFunc = UpdateProjMatrixFunc_Perspective;
+
+	bool simpleFollowWithWorldUp = false;
+
+	char PADDING2[3]{};
+
 
 public:
 
@@ -92,19 +97,19 @@ public:
 	/// カメラを動かす
 	/// </summary>
 	/// <param name="move">動かす量</param>
-	void Move(const EngineMathF::Vector3& move);
+	void Move(const AliceMathF::Vector3& move);
 
 	/// <summary>
 	/// 注視点を動かす
 	/// </summary>
 	/// <param name="move">移動量</param>
-	void MoveTarget(const EngineMathF::Vector3& move);
+	void MoveTarget(const AliceMathF::Vector3& move);
 
 	/// <summary>
 	/// 視点を動かす
 	/// </summary>
 	/// <param name="move">移動量</param>
-	void MovePosition(const EngineMathF::Vector3& move);
+	void MovePosition(const AliceMathF::Vector3& move);
 
 #pragma region セッター
 
@@ -168,27 +173,27 @@ public:
 	/// <summary>
 	/// ビュー行列を取得
 	/// </summary>
-	const EngineMathF::Matrix4& GetViewMatrix();
+	const AliceMathF::Matrix4& GetViewMatrix();
 
 	/// <summary>
 	/// ビュー行列の逆行列を取得
 	/// </summary>
-	const EngineMathF::Matrix4& GetViewMatrixInv();
+	const AliceMathF::Matrix4& GetViewMatrixInv();
 
 	/// <summary>
 	/// プロジェクション行列を取得
 	/// </summary>
-	const EngineMathF::Matrix4& GetProjectionMatrix();
+	const AliceMathF::Matrix4& GetProjectionMatrix();
 
 	/// <summary>
 	/// ビュー×プロジェクション行列を取得
 	/// </summary>
-	const EngineMathF::Matrix4& GetViewProjectionMatrix();
+	const AliceMathF::Matrix4& GetViewProjectionMatrix();
 
 	/// <summary>
 	/// カメラの回転行列を取得
 	/// </summary>
-	const EngineMathF::Matrix4& GetCameraRotation();
+	const AliceMathF::Matrix4& GetCameraRotation();
 
 	/// <summary>
 	/// 遠平面までの距離を取得
@@ -220,7 +225,7 @@ public:
 	/// <summary>
 	/// カメラの前方向を取得
 	/// </summary>
-	const EngineMathF::Vector3& GetForward() const;
+	const AliceMathF::Vector3& GetForward() const;
 
 	/// <summary>
 	/// 平行投影の下端を取得

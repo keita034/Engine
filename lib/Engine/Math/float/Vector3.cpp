@@ -1,8 +1,7 @@
 #include "Vector3.h"
-#include<cmath>
-#include"EngineMathF.h"
+#include"AliceMathF.h"
 
-namespace EngineMathF
+namespace AliceMathF
 {
 	Vector3::Vector3() : x(0.0f), y(0.0f), z(0.0f)
 	{}
@@ -10,14 +9,21 @@ namespace EngineMathF
 	Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z)
 	{}
 
-	float Vector3::length() const
+	Vector3::Vector3(aiVector3D& aiVector)
 	{
-		return std::sqrt(x * x + y * y + z * z);
+		x = aiVector.x;
+		y = aiVector.y;
+		z = aiVector.z;
 	}
 
-	Vector3& Vector3::normal()
+	float Vector3::Length() const
 	{
-		float len = length();
+		return Sqrt(x * x + y * y + z * z);
+	}
+
+	Vector3& Vector3::Normal()
+	{
+		float len = Length();
 		if (len != 0)
 		{
 			return *this /= len;
@@ -26,11 +32,11 @@ namespace EngineMathF
 		return *this;
 	}
 
-	Vector3& Vector3::normalization() const
+	Vector3 Vector3::Normalization() const
 	{
 		Vector3 tmp(*this);
 
-		float len = length();
+		float len = Length();
 		if (len != 0)
 		{
 			return tmp /= len;
@@ -39,12 +45,12 @@ namespace EngineMathF
 		return tmp;
 	}
 
-	float Vector3::dot(const Vector3& v) const
+	float Vector3::Dot(const Vector3& v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
 
-	Vector3 Vector3::cross(const Vector3& v) const
+	Vector3 Vector3::Cross(const Vector3& v) const
 	{
 		Vector3 w;
 		w.x = y * v.z - z * v.y;
@@ -75,8 +81,6 @@ namespace EngineMathF
 
 	Vector3& Vector3::operator-=(const Vector3& v)
 	{
-		// TODO: return ステートメントをここに挿入します
-
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
@@ -170,7 +174,7 @@ namespace EngineMathF
 		return temp /= s;
 	}
 
-	Vector3 Negate(Vector3& vec)
+	Vector3 Negate(const Vector3& vec)
 	{
 		Vector3 retVec;
 		retVec.x = -vec.x;

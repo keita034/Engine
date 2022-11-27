@@ -31,7 +31,7 @@ public:
 	/// フレームレートを設定
 	/// </summary>
 	/// <param name="fps_">フレームレート</param>
-	void SetFrameRate(float fps_);
+	void SetFrameRate(float frameRate);
 
 	/// <summary>
 	/// フレームレートを取得

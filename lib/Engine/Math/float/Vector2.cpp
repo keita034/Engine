@@ -1,7 +1,7 @@
 #include "Vector2.h"
-#include<cmath>
+#include"AliceMathUtility.h"
 
-namespace EngineMathF
+namespace AliceMathF
 {
 	//零ベクトル
 	Vector2::Vector2() : x(0.0f), y(0.0f)
@@ -13,15 +13,15 @@ namespace EngineMathF
 	}
 
 	// ベクトルの長さを計算する
-	float Vector2::length() const
+	float Vector2::Length() const
 	{
-		return std::sqrt(x * x + y * y);
+		return Sqrt(x * x + y * y);
 	}
 
 	// 正規化ベクトル
-	Vector2& Vector2::normalization()
+	Vector2& Vector2::Normalization()
 	{
-		float len = length();
+		float len = Length();
 		if (len != 0)
 		{
 			return *this /= len;
@@ -32,12 +32,12 @@ namespace EngineMathF
 	}
 
 	// もう一方のベクトルとの内積
-	float Vector2::dot(const Vector2& v) const
+	float Vector2::Dot(const Vector2& v) const
 	{
 		return x * v.x + y * v.y;
 	}
 	//外積を求める
-	float Vector2::cross(const Vector2& v) const
+	float Vector2::Cross(const Vector2& v) const
 	{
 		return x * v.y - v.x * y;
 	}

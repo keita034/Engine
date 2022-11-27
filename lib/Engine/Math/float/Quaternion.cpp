@@ -1,6 +1,6 @@
 #include "Quaternion.h"
-#include"EngineMathUtility.h"
-namespace EngineMathF
+#include"AliceMathUtility.h"
+namespace AliceMathF
 {
 	//成分を指定して クォータニオンを作成
 	Quaternion::Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w)
@@ -65,27 +65,42 @@ namespace EngineMathF
 		}
 	}
 
-	float Quaternion::dot(const Quaternion& q1, const Quaternion& q2)
+	Quaternion::Quaternion(const aiQuaternion& q)
 	{
-		return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+		x = q.x;
+		y = q.y;
+		z = q.z;
+		w = q.w;
 	}
 
-	float Quaternion::length(const Quaternion& q)
+	Quaternion::Quaternion(const Vector4& v)
 	{
-		return Sqrt(dot(q, q));
+		x = v.x;
+		y = v.y;
+		z = v.z;
+		w = v.w;
 	}
 
-	Quaternion Quaternion::normalize(const Quaternion& q)
+	float Quaternion::Dot(const Quaternion& q)
 	{
-		Quaternion result = q;
+		return w * q.w + x * q.x + y * q.y + z * q.z;
+	}
 
-		float len = length(result);
+	float Quaternion::Length()
+	{
+		return Sqrt(Dot(*this));
+	}
+
+	Quaternion Quaternion::Normalize()
+	{
+		float len = Length();
 
 		if (len != 0)
 		{
-			result /= len;
+			*this /= len;
 		}
-		return result;
+
+		return *this;
 	}
 
 	//単項演算子のオーバーロード
@@ -144,15 +159,15 @@ namespace EngineMathF
 
 		return *this;
 	}
-	Quaternion Quaternion::slerp(const Quaternion& q1, const Quaternion& q2, float t)
+	Quaternion Quaternion::Slerp(const Quaternion& q, float t)
 	{
-		float cos = dot(q1, q2);
-		Quaternion t2 = q2;
+		float cos = Dot(q);
+		Quaternion t2 = q;
 
 		if (cos < 0.0f)
 		{
 			cos = -cos;
-			t2 = -q2;
+			t2 = -q;
 		}
 
 		float k0 = 1.0f - t;
@@ -164,33 +179,33 @@ namespace EngineMathF
 			k0 = (float)(sin(theta * k0) / sin(theta));
 			k1 = (float)(sin(theta * k1) / sin(theta));
 		}
-		return q1 * k0 + t2 * k1;
+		return *this * k0 + t2 * k1;
 	}
-	Quaternion Quaternion::lerp(const Quaternion& q1, const Quaternion& q2, float t)
+	Quaternion Quaternion::Lerp(const Quaternion& q, float t)
 	{
-		float cos = dot(q1, q2);
-		Quaternion t2 = q2;
+		float cos = Dot(q);
+		Quaternion t2 = q;
 		if (cos < 0.0f)
 		{
 			cos = -cos;
-			t2 = -q2;
+			t2 = -q;
 		}
 
 		float k0 = 1.0f - t;
 		float k1 = t;
-		return q1 * k0 + t2 * k1;
+		return *this * k0 + t2 * k1;
 	}
-	Matrix4 Quaternion::rotate(const Quaternion& q)
+	Matrix4 Quaternion::Rotate()
 	{
-		float xx = q.x * q.x * 2.0f;
-		float yy = q.y * q.y * 2.0f;
-		float zz = q.z * q.z * 2.0f;
-		float xy = q.x * q.y * 2.0f;
-		float xz = q.x * q.z * 2.0f;
-		float yz = q.y * q.z * 2.0f;
-		float wx = q.w * q.x * 2.0f;
-		float wy = q.w * q.y * 2.0f;
-		float wz = q.z * q.z * 2.0f;
+		float xx = x * x * 2.0f;
+		float yy = y * y * 2.0f;
+		float zz = z * z * 2.0f;
+		float xy = x * y * 2.0f;
+		float xz = x * z * 2.0f;
+		float yz = y * z * 2.0f;
+		float wx = w * x * 2.0f;
+		float wy = w * y * 2.0f;
+		float wz = z * z * 2.0f;
 			
 		
 		
@@ -203,14 +218,14 @@ namespace EngineMathF
 
 		return result;
 	}
-	Vector3 Quaternion::getAxis(const Quaternion& q)
+	Vector3 Quaternion::GetAxis()
 	{
 		Vector3 result;
 
-		float x_ = q.x;
-		float y_ = q.y;
-		float z_ = q.z;
-		float len_ = length(q);
+		float x_ = x;
+		float y_ = y;
+		float z_ = z;
+		float len_ = Length();
 
 		result.x = x_ / len_;
 		result.y = y_ / len_;
@@ -219,6 +234,10 @@ namespace EngineMathF
 		return result;
 
 
+	}
+	Vector4 Quaternion::GetElement()
+	{
+		return {x,y,z,w};
 	}
 	const Quaternion operator+(const Quaternion& q1, const Quaternion& q2)
 	{
@@ -254,5 +273,12 @@ namespace EngineMathF
 		Quaternion result = q;
 		result /= s;
 		return result;
+	}
+	void QuaternionSlerp(Vector4& vOut, aiQuaternion& qStart, aiQuaternion& qEnd, float t)
+	{
+		Quaternion start = Quaternion(qStart);
+		Quaternion end = Quaternion(qEnd);
+
+		vOut = start.Slerp(end, t).GetElement();
 	}
 }

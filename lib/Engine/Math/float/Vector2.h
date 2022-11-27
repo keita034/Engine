@@ -1,7 +1,7 @@
 #pragma once
 
 //2次元ベクトル
-namespace EngineMathF
+namespace AliceMathF
 {
 	class Vector2
 	{
@@ -15,10 +15,10 @@ namespace EngineMathF
 		Vector2(float x, float y);//x成分、y成分を指定しての生成
 
 		//メンバ関数
-		float length()const;//ノルムを求める
-		Vector2& normalization();//正規化する
-		float dot(const Vector2& v)const;//内積を求める
-		float cross(const Vector2& v)const;//外積を求める
+		float Length()const;//ノルムを求める
+		Vector2& Normalization();//正規化する
+		float Dot(const Vector2& v)const;//内積を求める
+		float Cross(const Vector2& v)const;//外積を求める
 
 		//単項演算子オーバーロード
 		Vector2 operator+()const;

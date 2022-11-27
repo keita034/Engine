@@ -1,28 +1,35 @@
 #pragma once
 #include"ErrorException.h"
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"Camera.h"
+#include"ConstantBuffer.h"
+#include"AliceUtility.h"
 
 class Transform
 {
 private:
 	// 定数バッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> constBuff;
+	std::shared_ptr<ConstantBuffer> constBuff;
 	//定数バッファのマッピング用ポインタ
-	worldViewpojCamera* constBuffMap = nullptr;
+	worldViewpojCamera constBuffMap;
+
+	//初期化用のビュー行列計算
+	static AliceMathF::Matrix4 defaultViewMat;
+
+	//初期化用のプロジェクション行列計算
+	static AliceMathF::Matrix4 defaultProjectionMat;
+
 
 public:
 	// ローカル座標
-	EngineMathF::Vector3 translation = { 0, 0, 0 };
+	AliceMathF::Vector3 translation = { 0.0f, 0.0f, 0.0f };
 	// X,Y,Z軸回りのローカル回転角
-	EngineMathF::Vector3 rotation = { 0, 0, 0 };
+	AliceMathF::Vector3 rotation = { 0.0f, 0.0f, 0.0f };
 	// ローカルスケール
-	EngineMathF::Vector3 scale = { 1, 1, 1 };
+	AliceMathF::Vector3 scale = { 1.0f, 1.0f, 1.0f };
 
-	EngineMathF::Matrix4 matWorld;
-private:
-	char PADDING[4]{};
-public:
+	AliceMathF::Matrix4 matWorld;
+
 	// 親となるワールド変換へのポインタ
 	const Transform* parent = nullptr;
 
@@ -37,16 +44,16 @@ public:
 	/// </summary>
 	void TransUpdate(Camera* camera);
 
+	void Update();
+
 	void MakeWorldMatrix();
 
 	ID3D12Resource* GetconstBuff();
 
 	worldViewpojCamera* GetWorldViewpojCamera();
-
-
 };
 
-namespace EngineMathF
+namespace AliceMathF
 {
 	Matrix4 MakeWorldMatrix4(Transform& transform);
 

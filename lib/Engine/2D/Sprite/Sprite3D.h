@@ -3,19 +3,12 @@
 #include"ErrorException.h"
 
 //自作.h
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"WindowsApp.h"
 #include"DirectX12Core.h"
 #include "Camera.h"
 #include"Sprite.h"
 #include"DefaultMaterial.h"
-
-//pragma comment
-
-
-
-//using namespace
-
 
 class Sprite3D : public Sprite
 {
@@ -26,17 +19,54 @@ public:
 	Sprite3D() = default;
 	~Sprite3D() = default;
 
-	//初期化
-	virtual void Initialize()override;
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="textureData">テクスチャデータ</param>
+	virtual void Initialize(const TextureData& textureData)override;
 
-	///<summary>
-	///描画
-	///</summary>
-	virtual void Draw(TextureData& textureData, Transform& transform, Material* material = &DEFAULT_SPRITE3D_MATERIAL);
-	
-	virtual void Draw(TextureData& textureData, Transform& transform,Camera* camera, BillboardFlag flag = NonBillboard, Material* material = &DEFAULT_SPRITE3D_MATERIAL);
+	/// <summary>
+	/// 描画(ビルボードあり)
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="camera">カメラ</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	/// <param name="flag">ビルボードの種類(初期値は無効)</param>
+	/// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void Draw(Transform& transform, Camera* camera, BlendMode blend = BlendMode::AX_BLENDMODE_ALPHA, BillboardFlag flag = NonBillboard, Material* material = nullptr);
 
-	virtual void AnimationDraw(TextureData& textureData, Transform& transform, uint16_t radiusX, uint16_t radiusY, float& frame, float frameDiv, Material* material = &DEFAULT_SPRITE3D_MATERIAL);
+	/// <summary>
+	/// 描画(ビルボードなし)
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	//// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void Draw(Transform& transform, BlendMode blend = BlendMode::AX_BLENDMODE_NOBLEND, Material* material = nullptr)override;
+
+	/// <summary>
+	/// アニメーション描画(ビルボードなし)
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="radiusX">アニメーション画像の一枚分の横幅</param>
+	/// <param name="radiusY">アニメーション画像の一枚分の縦幅</param>
+	/// <param name="frame">アニメーションフレーム</param>
+	/// <param name="frameDiv">アニメーションフレームの最大値</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	/// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void AnimationDraw(Transform& transform, uint16_t radiusX, uint16_t radiusY, float& frame, float frameDiv, BlendMode blend = BlendMode::AX_BLENDMODE_ALPHA, Material* material = nullptr)override;
+
+	/// <summary>
+	/// アニメーション描画(ビルボードあり)
+	/// </summary>
+	/// <param name="transform">ワールド変換データ</param>
+	/// <param name="radiusX">アニメーション画像の一枚分の横幅</param>
+	/// <param name="radiusY">アニメーション画像の一枚分の縦幅</param>
+	/// <param name="frame">アニメーションフレーム</param>
+	/// <param name="frameDiv">アニメーションフレームの最大値</param>
+	//// <param name="camera">カメラ</param>
+	/// <param name="blend">ブレンド設定(初期値はアルファブレンド)</param>
+	/// <param name="material">ブレンドがCUSTOM時に使う</param>
+	virtual void AnimationDraw(Transform& transform, uint16_t radiusX, uint16_t radiusY, float& frame, float frameDiv, Camera* camera, BlendMode blend = BlendMode::AX_BLENDMODE_ALPHA, BillboardFlag flag = NonBillboard, Material* material = nullptr);
 
 private:
 

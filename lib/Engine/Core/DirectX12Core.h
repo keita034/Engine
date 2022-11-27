@@ -1,7 +1,10 @@
 #pragma once
 #include"ErrorException.h"
+#include"DescriptorHeap.h"
 
-
+/// <summary>
+/// コア
+/// </summary>
 class DirectX12Core
 {
 private:
@@ -16,7 +19,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
-
 
 	//バックバッファ
 	std::vector< Microsoft::WRL::ComPtr<ID3D12Resource>> backBuffers;
@@ -51,80 +53,83 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
 
 	static DirectX12Core* DirectX12Core_;
+	
+	//デスクプリタヒープ
+	std::unique_ptr<DescriptorHeap> descriptorHeap;
 
 public:
 
 	//シングルトンインスタンスの取得
 	static DirectX12Core* GetInstance();
 
-	//初期化
+	/// <summary>
+	/// デバイスの取得(スタティック)
+	/// </summary>
+	static Microsoft::WRL::ComPtr<ID3D12Device> GetDeviceSta();
+
+	/// <summary>
+	/// コマンドリストの取得(スタティック)
+	/// </summary>
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandListSta();
+	
+	/// <summary>
+	/// リソースの状態を変える
+	/// </summary>
+	/// <param name="resource">リソース</param>
+	/// <param name="beforeState">今の状態</param>
+	/// <param name="afterState">変えたい状態</param>
+	static void ResourceTransition(ID3D12Resource* resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
+
+	/// <summary>
+	/// 初期化
+	/// </summary>
 	void DirectXInitialize();
 
-	//描画準備
+	/// <summary>
+	/// 描画準備
+	/// </summary>
 	void BeginDraw();
 
-	//描画後始末
+	/// <summary>
+	/// 描画後始末
+	/// </summary>
 	void EndDraw();
 
-	//コマンド後始末
+	/// <summary>
+	/// コマンド後始末
+	/// </summary>
 	void ExecuteCommand();
 
+	/// <summary>
+	/// 開放
+	/// </summary>
 	void Destroy();
-	//セッター
 
 	//背景の色変え(RGBA)
 	void SetBackScreenColor(float red, float green, float blue, float alpha);
 
-	//ゲッター
+	/// <summary>
+	/// デバイスの取得
+	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12Device> GetDevice();
+
+	/// <summary>
+	/// コマンドリスト取得
+	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList();
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetRtvHeap();
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> GetSwapChain();
-	D3D12_CPU_DESCRIPTOR_HANDLE GetRtvHandle();
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> GetCmdAllocator();
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue();
-	D3D12_DESCRIPTOR_HEAP_DESC GetRtvHeapDesc();
-	Microsoft::WRL::ComPtr<IDXGIFactory7> GetDxgiFactory();
-	Microsoft::WRL::ComPtr<ID3D12Fence> GetFence();
-	UINT64 GetFenceVal();
 
-#pragma region テンプレート関数
+	/// <summary>
+	/// SRV,CBV,URV用デスクプリタヒープ取得
+	/// </summary>
+	DescriptorHeap* GetDescriptorHeap();
 
-	//定数バッファ作成
-	template<typename T>
-	void CreateConstBuff(T*& buff, Microsoft::WRL::ComPtr<ID3D12Resource>& constBuff)
-	{
-
-		// 頂点バッファの設定
-		D3D12_HEAP_PROPERTIES heapProp{}; // ヒープ設定
-		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD; // GPUへの転送用
-		// リソース設定
-		D3D12_RESOURCE_DESC resDesc{};
-		resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		resDesc.Width = (sizeof(T) + 0xff) & ~0xff; // 頂点データ全体のサイズ
-		resDesc.Height = 1;
-		resDesc.DepthOrArraySize = 1;
-		resDesc.MipLevels = 1;
-		resDesc.SampleDesc.Count = 1;
-		resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-		//定数バッファの生成
-		result = device->CreateCommittedResource(
-			&heapProp,
-			D3D12_HEAP_FLAG_NONE,
-			&resDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(constBuff.ReleaseAndGetAddressOf()));
-		assert(SUCCEEDED(result));
-
-		//定数バッファのマッピング
-		result = constBuff->Map(0, nullptr, (void**)&buff);//マッピング
-		assert(SUCCEEDED(result));
-
-	}
-
-#pragma endregion
+	/// <summary>
+	/// リソースの状態を変える
+	/// </summary>
+	/// <param name="resource">リソース</param>
+	/// <param name="beforeState">今の状態</param>
+	/// <param name="afterState">変えたい状態</param>
+	void Transition(ID3D12Resource* resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
 private:
 
@@ -149,7 +154,14 @@ private:
 	//デバッグレイヤーを有効にする
 	void EnableDebugLayer();
 
+	//インフォキューを有効にする
+	void EnableInfoQueue();
+
 	//コンストラクタ・デストラクタ
 	DirectX12Core() = default;
 	~DirectX12Core() = default;
+
+	//コピーコンストラクタ・代入演算子削除
+	DirectX12Core& operator=(const DirectX12Core&) = delete;
+	DirectX12Core(const DirectX12Core&) = delete;
 };

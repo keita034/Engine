@@ -1,19 +1,11 @@
 #pragma once
-//#DirectXのやつ
 #include"ErrorException.h"
 
-//自作.h
 #include "DirectX12Core.h"
-#include"WindowsApp.h"
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"Camera.h"
-
-//pragma comment
-#pragma comment(lib, "d3dcompiler.lib")
-
-
-//using namespace
-
+#include"ConstantBuffer.h"
+#include"AliceUtility.h"
 
 class Mesh3D
 {
@@ -22,18 +14,13 @@ private:
 	DirectX12Core* directX12Core = nullptr;
 
 	//定数バッファのGPUリソースのポインタ
-	Microsoft::WRL::ComPtr<ID3D12Resource> constBuffTransform = nullptr;
+	std::unique_ptr<ConstantBuffer> constBuffTransform = nullptr;
 	//定数バッファのマッピング用ポインタ
 	ConstBufferDataTransform* constMapTransform = nullptr;
 
 	//ブレンドモード
 	UINT blendMode;
 	char PADDING[4];
-
-	//三角形形状パイプラインセット
-	std::array<std::unique_ptr<PipelineSet>, (size_t)BlendMode::AX_BLENDMODE_MAX>trianglePipelineSet;
-	//ライン形状パイプラインセット
-	std::array<std::unique_ptr<PipelineSet>, (size_t)BlendMode::AX_BLENDMODE_MAX>linePipelineSet;
 
 	//三角形バッファ
 	std::unique_ptr <Buff> triangleBuff;
@@ -72,7 +59,7 @@ private:
 
 	Camera* camera;
 
-	EngineMathF::Matrix4 projectionMat;
+	AliceMathF::Matrix4 projectionMat;
 
 public:
 
@@ -87,7 +74,7 @@ public:
 	/////<param name="y3">: 描画する三角形の頂点3 Y</param>
 	/////<param name="color">: 描画する三角形の色</param>
 	/////<param name="fillFlag">: 三角形の中身を塗りつぶすかフラグ</param>
-	//void DrawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, EngineMath::Vector4 color, int fillFlag);
+	//void DrawTriangle(float x1, float y1, float x2, float y2, float x3, float y3, AliceMath::Vector4 color, int fillFlag);
 
 	///<summary>
 	///線を描画する
@@ -97,7 +84,7 @@ public:
 	///<param name="x2">: 描画する線の終点座標 X</param>
 	///<param name="y2">: 描画する線の終点座標 Y</param>
 	///<param name="color">: 描画する線の色</param>
-	void DrawLine(EngineMathF::Vector3 start , EngineMathF::Vector3 end, EngineMathF::Vector4 color);
+	void DrawLine(AliceMathF::Vector3 start , AliceMathF::Vector3 end, AliceMathF::Vector4 color);
 
 	/////<summary>
 	/////四角形を描画する
@@ -109,7 +96,7 @@ public:
 	/////<param name="angle">: 描画する四角形の回転角(弧度法)</param>
 	/////<param name="color">: 描画する四角形の色</param>
 	/////<param name="fillFlag">: 四角形の中身を塗りつぶすかフラグ</param>
-	//void DrawBox(float x, float y, float radiusX, float radiusY, float angle, EngineMath::Vector4 color, int fillFlag);
+	//void DrawBox(float x, float y, float radiusX, float radiusY, float angle, AliceMath::Vector4 color, int fillFlag);
 
 	/////<summary>
 	/////楕円を描画する
@@ -121,7 +108,7 @@ public:
 	/////<param name="angle">楕円の回転角(rad)</param>
 	/////<param name="color">楕円の色</param>
 	/////<param name="fillFlag">: 四角形の中身を塗りつぶすかフラグ</param>
-	//void DrawEllipse(float x, float y, float radiusX, float radiusY, float angle, EngineMath::Vector4 color, int fillMode);
+	//void DrawEllipse(float x, float y, float radiusX, float radiusY, float angle, AliceMath::Vector4 color, int fillMode);
 
 	///<summary>
 	///カウント初期化
@@ -142,14 +129,14 @@ public:
 	///<param name="green">: 取得したい色の輝度値 : 初期値255 (0～255)</param>
 	///<param name="alpha">: 取得したい色の透過率 : 初期値255 (0～255)</param>
 	///<returns>色コード</returns>
-	EngineMathF::Vector4 GetColor(int red = 255, int blue = 255, int green = 255, int alpha = 255);
+	AliceMathF::Vector4 GetColor(int red = 255, int blue = 255, int green = 255, int alpha = 255);
 
 	///<summary>
 	///色コードを取得する
 	///</summary>
 	///<param name="color">: 取得したい各色の輝度値 : 初期値255 (0～255)</param>
 	///<returns>色コード</returns>
-	EngineMathF::Vector4 GetColor(EngineMathF::Vector4 color);
+	AliceMathF::Vector4 GetColor(AliceMathF::Vector4 color);
 
 	/// <summary>
 	/// インスタンスを所得
@@ -170,13 +157,10 @@ private:
 	Mesh3D();
 
 	//三角形を描画する(中身塗りつぶし)
-	void DrawTriangleFill(float x1, float y1, float x2, float y2, float x3, float y3, EngineMathF::Vector4 color);
+	void DrawTriangleFill(float x1, float y1, float x2, float y2, float x3, float y3, AliceMathF::Vector4 color);
 
 	//四角形を描画する(中身塗りつぶし)
-	void DrawBoxFill(float x, float y, float width, float height, float angle, EngineMathF::Vector4 color);
-
-	//パイプライン作成
-	std::unique_ptr < PipelineSet> CreatPipeline(D3D12_PRIMITIVE_TOPOLOGY_TYPE type, BlendMode mode);
+	void DrawBoxFill(float x, float y, float width, float height, float angle, AliceMathF::Vector4 color);
 
 	///<summary>
 	///バッファ作成
@@ -185,10 +169,6 @@ private:
 	///<param name="indexCount">: インデックス数</param>
 	///<returns>バッファ</returns>
 	std::unique_ptr <Buff> CreateBuff(UINT vertexCount, UINT indexCount);
-
-
-	//各種パイプラインセット生成
-	void CreatArryPipeline();
 
 	//定数バッファ生成(2D座標変換行列)
 	void CreatConstBuff();

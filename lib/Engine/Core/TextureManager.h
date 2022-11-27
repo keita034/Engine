@@ -1,18 +1,13 @@
 #pragma once
 #include"ErrorException.h"
-#include"EngineMathUtility.h"
+#include"AliceUtility.h"
+#include"DirectX12Core.h"
 
 class TextureManager
 {
 private:
 
-	//デスクプリタヒープ
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvHeap;
-	//デスクプリタレンジ
-	D3D12_DESCRIPTOR_RANGE descriptorRange;
-	char PADDING[4];
-
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
+	DirectX12Core* directX12Core;
 
 	static TextureManager* textureManager;
 
@@ -22,6 +17,14 @@ private:
 	// ヒープ設定
 	D3D12_HEAP_PROPERTIES textureHeapProp{};
 
+	enum ImgFileType
+	{
+		WIC,//pngなど
+		TGA,//tgaなど
+		PSD,//psdなど
+		ETC,//それ以外
+
+	};
 
 public:
 
@@ -30,14 +33,7 @@ public:
 	/// </summary>
 	/// <param name="filepath">テクスチャのファイルパス</param>
 	/// <returns>テクスチャハンドル</returns>
-	TextureData LoadTexture(const wchar_t* filepath);
-
-	/// <summary>
-	/// テクスチャをロードします(ポインタ)
-	/// </summary>
-	/// <param name="filepath">テクスチャのファイルパス</param>
-	/// <returns>テクスチャハンドル</returns>
-	void LoadTexturePtr(const wchar_t* filepath, TextureData* tex);
+	TextureData LoadTexture(const std::string& path);
 
 	/// <summary>
 	/// 初期化
@@ -55,14 +51,24 @@ public:
 	/// </summary>
 	void Destroy();
 
+	/// <summary>
+	/// テクスチャをロードします
+	/// </summary>
+	/// <param name="filepath">テクスチャのファイルパス</param>
+	/// <returns>テクスチャハンドル</returns>
+	static TextureData Load(const std::string& path);
+
 private:
 
 	TextureManager() = default;
 	~TextureManager() = default;
 
-
 	Microsoft::WRL::ComPtr<ID3D12Resource>CreateTexBuff(DirectX::TexMetadata& metadata, DirectX::ScratchImage& scratchImg);
 
 	D3D12_GPU_DESCRIPTOR_HANDLE CreateShaderResourceView(ID3D12Resource* texBuff, DirectX::TexMetadata& metadata);
+
+	void LoadFile(const std::string& path, DirectX::TexMetadata& metadata, DirectX::ScratchImage& scratchImg);
+
+	ImgFileType GetFileType(const std::string& path);
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 #include"ErrorException.h"
 #include <dinput.h>
-#include"EngineMathUtility.h"
+#include"AliceMathUtility.h"
 #include"WindowsApp.h"
 
 enum MouseButton
@@ -19,8 +19,8 @@ private:
 	DIMOUSESTATE2 mouseState = {};
 	DIMOUSESTATE2 oldMouseState = {};
 	//マウスのゲーム空間内でのレイ
-	EngineMathF::Vector2 mousePos;
-	EngineMathF::Vector3 mouseMove;
+	AliceMathF::Vector2 mousePos;
+	AliceMathF::Vector3 mouseMove;
 
 public:
 
@@ -59,13 +59,13 @@ public:
 	/// マウスの位置
 	/// </summary>
 	/// <returns>マウスの位置</returns>
-	const EngineMathF::Vector2 GetMousePos()const;
+	const AliceMathF::Vector2 GetMousePos()const;
 
 	/// <summary>
 	/// マウスの位置
 	/// </summary>
 	/// <returns>マウスの位置</returns>
-	const EngineMathF::Vector3 GetMouseMove();
+	const AliceMathF::Vector3 GetMouseMove();
 
 	char PADDING[4];
 };

@@ -1,8 +1,8 @@
 #include "Vector4.h"
 #include"Vector3.h"
-#include<cmath>
+#include"AliceMathUtility.h"
 
-namespace EngineMathF
+namespace AliceMathF
 {
 	Vector4::Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f)
 	{
@@ -12,22 +12,30 @@ namespace EngineMathF
 	{
 	}
 
-	float Vector4::length() const
+	Vector4::Vector4(aiQuaternion& aiQuaternion)
 	{
-		float len = lengthSquared();
-		return std::sqrt(len);
+		x = aiQuaternion.x;
+		y = aiQuaternion.y;
+		z = aiQuaternion.z;
+		w = aiQuaternion.w;
 	}
 
-	float Vector4::lengthSquared() const
+	float Vector4::Length() const
 	{
-		return dot(*this);
+		float len = LengthSquared();
+		return Sqrt(len);
 	}
 
-	Vector4& Vector4::normalization() const
+	float Vector4::LengthSquared() const
+	{
+		return Dot(*this);
+	}
+
+	Vector4 Vector4::Normalization() const
 	{
 		Vector4 tmp(*this);
 
-		float len = length();
+		float len = Length();
 		if (len != 0)
 		{
 			return tmp /= len;
@@ -37,9 +45,9 @@ namespace EngineMathF
 		return tmp;
 	}
 
-	Vector4& Vector4::normal()
+	Vector4& Vector4::Normal()
 	{
-		float len = length();
+		float len = Length();
 		if (len != 0)
 		{
 			return *this /= len;
@@ -49,16 +57,16 @@ namespace EngineMathF
 		return *this;
 	}
 
-	float Vector4::dot(const Vector4& v) const
+	float Vector4::Dot(const Vector4& v) const
 	{
 		return x * v.x + y * v.y + z * v.z + w * v.w;
 	}
 
-	Vector4 Vector4::cross(const Vector4& v) const
+	Vector4 Vector4::Cross(const Vector4& v) const
 	{
 		Vector3 v1 = { x,y,z };
 		Vector3 v2 = { v.x,v.y,v.z };
-		Vector3 temp = v1.cross(v2);
+		Vector3 temp = v1.Cross(v2);
 		return { temp.x,temp.y,temp.z,0.0f };
 	}
 

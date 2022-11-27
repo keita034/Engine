@@ -1,7 +1,7 @@
 #include "Matrix4.h"
-#include"EngineMathF.h"
+#include"AliceMathF.h"
 
-namespace EngineMathF
+namespace AliceMathF
 {
 	Matrix4::Matrix4()
 	{
@@ -47,6 +47,50 @@ namespace EngineMathF
 		m[3][1] = m31;
 		m[3][2] = m32;
 		m[3][3] = m33;
+	}
+
+
+	Matrix4::Matrix4(const Vector3& scale, Quaternion& rotat, const Vector3& trans)
+	{
+		AliceMathF::Matrix4 matScale, matRot, matTrans;
+
+		//スケール、回転、平行移動行列の計算
+		matScale.MakeScaling(scale);
+		matRot = rotat.Rotate();
+		matTrans.MakeTranslation(trans);
+
+		//ワールド行列の合成
+		//変形をリセット
+		*this = AliceMathF::MakeIdentity();
+		//ワールド行列にスケーリングを反映
+		*this *= matScale;
+		//ワールド行列に回転を反映
+		*this *= matRot;
+		//ワールド行列に平行移動を反映
+		*this *= matTrans;
+	}
+	
+	Matrix4::Matrix4(const aiMatrix4x4& mat)
+	{
+		m[0][0] = mat.a1;
+		m[0][1] = mat.a2;
+		m[0][2] = mat.a3;
+		m[0][3] = mat.a4;
+
+		m[1][0] = mat.b1;
+		m[1][1] = mat.b2;
+		m[1][2] = mat.b3;
+		m[1][3] = mat.b4;
+
+		m[2][0] = mat.c1;
+		m[2][1] = mat.c2;
+		m[2][2] = mat.c3;
+		m[2][3] = mat.c4;
+
+		m[3][0] = mat.d1;
+		m[3][1] = mat.d2;
+		m[3][2] = mat.d3;
+		m[3][3] = mat.d4;
 	}
 
 	Matrix4 MakeIdentity()
@@ -250,8 +294,35 @@ namespace EngineMathF
 		return mat;
 	}
 
+	Matrix4& Matrix4::Transpose()
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = i; j < 4; j++)
+			{
+				float f = m[i][j];
+				m[i][j] = m[j][i];
+				m[j][i] = f;
+			}
+		}
+
+		return *this;
+	}
 
 	Matrix4& Matrix4::operator=(const Matrix4& _m)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				m[i][j] = _m.m[i][j];
+			}
+		}
+
+		return *this;
+	}
+
+	const Matrix4& Matrix4::operator=(Matrix4& _m)
 	{
 		for (int i = 0; i < 4; i++)
 		{
@@ -439,16 +510,16 @@ namespace EngineMathF
 		z = vec.x * mat.m[0][2] + vec.y * mat.m[1][2] + vec.z * mat.m[2][2];
 	}
 
-	void MakeLookL(Vector3& eye, Vector3& target, Vector3& up, Matrix4& mat)
+	void MakeLookL(const Vector3& eye, const Vector3& target, const Vector3& up, Matrix4& mat)
 	{
 		Vector3 zVec = target - eye;
-		zVec.normal();
+		zVec.Normal();
 
-		Vector3 xVec = up.cross(zVec);
-		xVec.normal();
+		Vector3 xVec = up.Cross(zVec);
+		xVec.Normal();
 
-		Vector3 yVec = zVec.cross(xVec);
-		yVec.normal();
+		Vector3 yVec = zVec.Cross(xVec);
+		yVec.Normal();
 
 		mat.m[0][0] = xVec.x;
 		mat.m[0][1] = xVec.y;

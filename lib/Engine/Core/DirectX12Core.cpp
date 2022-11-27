@@ -1,13 +1,8 @@
-
-//自作.h
 #include "DirectX12Core.h"
 #include"WindowsApp.h"
 
-//pragma comment
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-
-//using namespace
 
 DirectX12Core* DirectX12Core::DirectX12Core_ = nullptr;
 
@@ -45,8 +40,8 @@ HRESULT DirectX12Core::CreatFinalRenderTarget()
 
 HRESULT DirectX12Core::CreateSwapChain()
 {
-	swapChainDesc.Width = static_cast<UINT>(WindowsApp::GetInstance()->GetWindowWidth());//横幅
-	swapChainDesc.Height = static_cast<UINT>(WindowsApp::GetInstance()->GetWindowHeight());//縦幅
+	swapChainDesc.Width = static_cast<UINT>(WindowsApp::GetInstance()->GetWindowSize().width);//横幅
+	swapChainDesc.Height = static_cast<UINT>(WindowsApp::GetInstance()->GetWindowSize().height);//縦幅
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;//色情報の書式
 	swapChainDesc.SampleDesc.Count = 1;//マルチサンプルなし
 	swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;//バックバッファ用
@@ -72,6 +67,12 @@ HRESULT DirectX12Core::CreateSwapChain()
 	}
 
 	return result;
+}
+
+void DirectX12Core::Transition(ID3D12Resource* resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+{
+	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource, beforeState, afterState);
+	commandList->ResourceBarrier(1, &barrier);
 }
 
 HRESULT DirectX12Core::InitializeDXGIDevice()
@@ -103,14 +104,29 @@ HRESULT DirectX12Core::InitializeDXGIDevice()
 		adapters.push_back(tmpAdapter);
 	}
 
+	// 妥当なアダプタを選別する
+	for (size_t i = 0; i < adapters.size(); i++) {
+		DXGI_ADAPTER_DESC3 adapterDesc;
+		// アダプターの情報を取得する
+		adapters[i]->GetDesc3(&adapterDesc);
+
+		// ソフトウェアデバイスを回避
+		if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)) {
+			// デバイスを採用してループを抜ける
+			tmpAdapter = adapters[i];
+			break;
+		}
+	}
+
 	//Direct3Dデバイスの初期化
 	D3D_FEATURE_LEVEL featureLevel;
-	for (auto lv : levels)
-	{
-		if (D3D12CreateDevice(tmpAdapter.Get(), lv, IID_PPV_ARGS(device.ReleaseAndGetAddressOf())) == S_OK)
-		{
-			//生成可能なバージョンが見つかったらループを打ち切り
-			featureLevel = lv;
+
+	for (size_t i = 0; i < _countof(levels); i++) {
+		// 採用したアダプターでデバイスを生成
+		result = D3D12CreateDevice(tmpAdapter.Get(), levels[i], IID_PPV_ARGS(device.GetAddressOf()));
+		if (result == S_OK) {
+			// デバイスを生成できた時点でループを抜ける
+			featureLevel = levels[i];
 			break;
 		}
 	}
@@ -165,8 +181,8 @@ HRESULT DirectX12Core::CreatDepthBuffer()
 	//リソース設定
 	D3D12_RESOURCE_DESC depthResourceDesc{};
 	depthResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthResourceDesc.Width = static_cast<UINT64>(WindowsApp::GetInstance()->GetWindowWidth());//レンダーターゲットに合わせる
-	depthResourceDesc.Height = static_cast<UINT64>(WindowsApp::GetInstance()->GetWindowHeight());//レンダーターゲットに合わせる
+	depthResourceDesc.Width = static_cast<UINT64>(WindowsApp::GetInstance()->GetWindowSize().width);//レンダーターゲットに合わせる
+	depthResourceDesc.Height = static_cast<UINT64>(WindowsApp::GetInstance()->GetWindowSize().height);//レンダーターゲットに合わせる
 	depthResourceDesc.DepthOrArraySize = 1;
 	depthResourceDesc.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 	depthResourceDesc.SampleDesc.Count = 1;
@@ -213,6 +229,11 @@ HRESULT DirectX12Core::CreatDepthBuffer()
 	return result;
 }
 
+void DirectX12Core::ResourceTransition(ID3D12Resource* resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+{
+	GetInstance()->Transition(resource, beforeState, afterState);
+}
+
 void DirectX12Core::DirectXInitialize()
 {
 #ifdef _DEBUG
@@ -225,6 +246,11 @@ void DirectX12Core::DirectXInitialize()
 		assert(0);
 		return;
 	}
+
+#ifdef _DEBUG
+	EnableInfoQueue();
+#endif
+
 	if (FAILED(InitializeCommand()))
 	{
 		assert(0);
@@ -250,17 +276,51 @@ void DirectX12Core::DirectXInitialize()
 		assert(0);
 		return;
 	}
+
+	descriptorHeap = std::make_unique<DescriptorHeap>();
+	descriptorHeap->Initialize();
 }
 
 void DirectX12Core::EnableDebugLayer()
 {
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController;
-
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debugController.ReleaseAndGetAddressOf()))))
 	{
 		debugController->EnableDebugLayer();
-		debugController->SetEnableGPUBasedValidation(true);
+		//debugController->SetEnableGPUBasedValidation(true);
 	}
+}
+
+void DirectX12Core::EnableInfoQueue()
+{
+	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
+	result = device->QueryInterface(IID_PPV_ARGS(&infoQueue));
+	if (SUCCEEDED(result))
+	{
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+	}
+
+	//抑制するエラー
+	D3D12_MESSAGE_ID denyIds[] =
+	{
+		/*
+		*windows11でのDXGIデバッグレイヤーとDX12デバッグレイヤー
+		*相互作用バグによるエラーメッセージ
+		*/
+		D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+
+	};
+		//抑制する表示レベル
+	D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
+	D3D12_INFO_QUEUE_FILTER filter{};
+	filter.DenyList.NumIDs = _countof(denyIds);
+	filter.DenyList.pIDList = denyIds;
+	filter.DenyList.NumSeverities = _countof(severities);
+	filter.DenyList.pSeverityList = severities;
+	//指定したエラーの表示を抑制する
+	infoQueue->PushStorageFilter(&filter);
 }
 
 void DirectX12Core::BeginDraw()
@@ -277,17 +337,17 @@ void DirectX12Core::BeginDraw()
 	//2描画先変更
 	rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 	rtvHandle.ptr += (static_cast<unsigned long long>(bbIndex)) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-	
+
 	//深度ステンシルビュー用デスクプリタヒープのハンドルを所得
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
 	//3画面クリア
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	commandList->ClearDepthStencilView(dsvHandle,D3D12_CLEAR_FLAG_DEPTH,1.0f,0,0,nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	//ビューポート設定
-	viewport.Width = (FLOAT)WindowsApp::GetInstance()->GetWindowWidth();
-	viewport.Height = (FLOAT)WindowsApp::GetInstance()->GetWindowHeight();
+	viewport.Width = (FLOAT)WindowsApp::GetInstance()->GetWindowSize().width;
+	viewport.Height = (FLOAT)WindowsApp::GetInstance()->GetWindowSize().height;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -298,9 +358,9 @@ void DirectX12Core::BeginDraw()
 
 	// シザー矩形設定
 	scissorRect.left = 0; // 切り抜き座標左
-	scissorRect.right = scissorRect.left + WindowsApp::GetInstance()->GetWindowWidth(); // 切り抜き座標右
+	scissorRect.right = scissorRect.left + WindowsApp::GetInstance()->GetWindowSize().width; // 切り抜き座標右
 	scissorRect.top = 0; // 切り抜き座標上
-	scissorRect.bottom = scissorRect.top + WindowsApp::GetInstance()->GetWindowHeight(); // 切り抜き座標下
+	scissorRect.bottom = scissorRect.top + WindowsApp::GetInstance()->GetWindowSize().height; // 切り抜き座標下
 
 	// シザー矩形設定コマンドを、コマンドリストに積む
 	commandList->RSSetScissorRects(1, &scissorRect);
@@ -323,7 +383,7 @@ void DirectX12Core::ExecuteCommand()
 	result = commandList->Close();
 	assert(SUCCEEDED(result));
 	//コマンドリストの実行
-	ID3D12CommandList* commandListts[] = { commandList.Get()};
+	ID3D12CommandList* commandListts[] = { commandList.Get() };
 	commandQueue->ExecuteCommandLists(1, commandListts);
 
 	//フリップ
@@ -385,6 +445,16 @@ DirectX12Core* DirectX12Core::GetInstance()
 
 }
 
+Microsoft::WRL::ComPtr<ID3D12Device> DirectX12Core::GetDeviceSta()
+{
+	return GetInstance()->GetDevice();
+}
+
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectX12Core::GetCommandListSta()
+{
+	return GetInstance()->GetCommandList();
+}
+
 Microsoft::WRL::ComPtr<ID3D12Device> DirectX12Core::GetDevice()
 {
 	return device;
@@ -395,49 +465,9 @@ Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> DirectX12Core::GetCommandList
 	return commandList;
 }
 
-Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> DirectX12Core::GetRtvHeap()
+DescriptorHeap* DirectX12Core::GetDescriptorHeap()
 {
-	return rtvHeap;
-}
-
-Microsoft::WRL::ComPtr <IDXGISwapChain4> DirectX12Core::GetSwapChain()
-{
-	return swapChain;
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Core::GetRtvHandle()
-{
-	return rtvHandle;
-}
-
-Microsoft::WRL::ComPtr <ID3D12CommandAllocator> DirectX12Core::GetCmdAllocator()
-{
-	return cmdAllocator;
-}
-
-Microsoft::WRL::ComPtr<ID3D12CommandQueue> DirectX12Core::GetCommandQueue()
-{
-	return commandQueue;
-}
-
-D3D12_DESCRIPTOR_HEAP_DESC DirectX12Core::GetRtvHeapDesc()
-{
-	return rtvHeapDesc;
-}
-
-Microsoft::WRL::ComPtr <IDXGIFactory7> DirectX12Core::GetDxgiFactory()
-{
-	return dxgiFactory;
-}
-
-Microsoft::WRL::ComPtr<ID3D12Fence> DirectX12Core::GetFence()
-{
-	return fence;
-}
-
-UINT64 DirectX12Core::GetFenceVal()
-{
-	return fenceVal;
+	return descriptorHeap.get();
 }
 
 #pragma endregion

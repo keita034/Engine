@@ -1,5 +1,5 @@
 #include "Light.h"
-
+#include"DirectX12Core.h"
 Light* Light::Create()
 {
 	//3Dオブジェクトのインスタンス生成
@@ -15,24 +15,28 @@ void Light::Initialize()
 	device = DirectX12Core::GetInstance()->GetDevice();
 
 	//定数バッファ
-	DirectX12Core::GetInstance()->CreateConstBuff(constMap, constBuff);
+	constBuff = std::make_unique<ConstantBuffer>();
+	constBuff->Create(sizeof(LightConstBuffData));
+
 	//定数バッファへデータ転送
 	TransferConstBuffer();
 }
 
 void Light::TransferConstBuffer(){
-	constMap->lightv = -lightdir;
-	constMap->lightcolor = lightcolor;
+	constMap.lightv = -lightdir;
+	constMap.lightcolor = lightcolor;
+
+	constBuff->Update(&constMap);
 }
 
-void Light::SetLightDir(EngineMathF::Vector3& lightdir_)
+void Light::SetLightDir(AliceMathF::Vector3& lightdir_)
 {
 	//正規化してセット
-	lightdir = lightdir_.normal();
+	lightdir = lightdir_.Normal();
 	dirty = true;
 }
 
-void Light::SetLightColor(EngineMathF::Vector4& lightcolor_)
+void Light::SetLightColor(AliceMathF::Vector4& lightcolor_)
 {
 	lightcolor = lightcolor_;
 	dirty = true;
@@ -51,5 +55,5 @@ void Light::Update()
 void Light::SetConstBufferView(ID3D12GraphicsCommandList* cmdList, UINT rootParameterIndex)
 {
 	//定数バッファビューをセット
-	cmdList->SetGraphicsRootConstantBufferView(rootParameterIndex, constBuff->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(rootParameterIndex, constBuff->GetAddress());
 }

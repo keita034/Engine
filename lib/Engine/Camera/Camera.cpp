@@ -1,12 +1,12 @@
 #include "Camera.h"
-
+#include"WindowsApp.h"
 
 void Camera::Initialize(UpdateProjMatrixFunc matFunc)
 {
 	//アスペクト比を計算する
 	aspect =
-		static_cast<float>(WindowsApp::GetInstance()->GetWindowWidth()) /
-		static_cast<float>(WindowsApp::GetInstance()->GetWindowHeight());
+		static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().width) /
+		static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().height);
 
 	matrixFunc = matFunc;
 
@@ -16,11 +16,11 @@ void Camera::Initialize(UpdateProjMatrixFunc matFunc)
 		{
 			far_ = 1.0f;
 		}
-		right = static_cast<float>(WindowsApp::GetInstance()->GetWindowWidth());
-		bottom = static_cast<float>(WindowsApp::GetInstance()->GetWindowHeight());
+		right = static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().width);
+		bottom = static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().height);
 
 		//平行投影の計算
-		EngineMathF::MakeOrthogonalL(left, right, bottom, top, near_, far_, projectionMatrix);
+		AliceMathF::MakeOrthogonalL(left, right, bottom, top, near_, far_, projectionMatrix);
 
 	}
 	else//透視投影
@@ -35,31 +35,31 @@ void Camera::Initialize(UpdateProjMatrixFunc matFunc)
 		}
 		if (fovAngleY == 0.0f)
 		{
-			fovAngleY = EngineMathF::AX_PI / 4;
+			fovAngleY = AliceMathF::AX_PI / 4;
 		}
 
 		//透視投影行列の計算
-		EngineMathF::MakePerspectiveL(fovAngleY, aspect, near_, far_, projectionMatrix);
+		AliceMathF::MakePerspectiveL(fovAngleY, aspect, near_, far_, projectionMatrix);
 
 	}
 
 	updateProjMatrix = false;
 
 	//ビュー行列の算出
-	EngineMathF::MakeLookL(eye, target, up, viewMatrix);
+	AliceMathF::MakeLookL(eye, target, up, viewMatrix);
 	//ビュー行列の逆行列を計算
-	viewMatrixInv = EngineMathF::MakeInverse(&viewMatrix);
+	viewMatrixInv = AliceMathF::MakeInverse(&viewMatrix);
 	//ビュープロジェクション行列の作成
 	viewProjectionMatrix = viewMatrix * projectionMatrix;
 
 	//カメラの前ベクトル取得
 	forward = { viewMatrixInv.m[2][0], viewMatrixInv.m[2][1], viewMatrixInv.m[2][2] };
-	forward.normal();
+	forward.Normal();
 
 	//注視点と視点の距離取得
-	EngineMathF::Vector3 toPos;
+	AliceMathF::Vector3 toPos;
 	toPos = eye - target;
-	tgtToPosLen = toPos.length();
+	tgtToPosLen = toPos.Length();
 
 	updateViewMatrix = false;
 }
@@ -86,9 +86,9 @@ void Camera::Update()
 				far_ = 1.0f;
 			}
 
-			right = static_cast<float>(WindowsApp::GetInstance()->GetWindowWidth());
-			bottom = static_cast<float>(WindowsApp::GetInstance()->GetWindowHeight());
-			EngineMathF::MakeOrthogonalL(left, right, bottom, top, near_, far_, projectionMatrix);
+			right = static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().width);
+			bottom = static_cast<float>(WindowsApp::GetInstance()->GetWindowSize().height);
+			AliceMathF::MakeOrthogonalL(left, right, bottom, top, near_, far_, projectionMatrix);
 
 		}
 		else
@@ -103,10 +103,10 @@ void Camera::Update()
 			}
 			if (fovAngleY == 0.0f)
 			{
-				fovAngleY = EngineMathF::AX_PI / 4;
+				fovAngleY = AliceMathF::AX_PI / 4;
 			}
 
-			EngineMathF::MakePerspectiveL(fovAngleY, aspect, near_, far_, projectionMatrix);
+			AliceMathF::MakePerspectiveL(fovAngleY, aspect, near_, far_, projectionMatrix);
 		}
 		updateProjMatrix = false;
 	}
@@ -114,36 +114,41 @@ void Camera::Update()
 	if (updateViewMatrix)
 	{
 		//ビュー行列の算出
-		EngineMathF::MakeLookL(eye, target, up, viewMatrix);
+		AliceMathF::MakeLookL(eye, target, up, viewMatrix);
 		//ビュープロジェクション行列の作成
 		viewProjectionMatrix = viewMatrix * projectionMatrix;
 		//ビュー行列の逆行列を計算
-		viewMatrixInv = EngineMathF::MakeInverse(&viewMatrix);
+		viewMatrixInv = AliceMathF::MakeInverse(&viewMatrix);
 
 		forward = { viewMatrixInv.m[2][0], viewMatrixInv.m[2][1], viewMatrixInv.m[2][2] };
 
-		EngineMathF::Vector3 toPos;
+		AliceMathF::Vector3 toPos;
 		toPos = eye - target;
-		tgtToPosLen = toPos.length();
+		tgtToPosLen = toPos.Length();
 
 		updateViewMatrix = false;
 	}
+
+	if (simpleFollowWithWorldUp)
+	{
+
+	}
 }
 
-void Camera::Move(const EngineMathF::Vector3& move)
+void Camera::Move(const AliceMathF::Vector3& move)
 {
 	eye += move;
 	target += move;
 	updateViewMatrix = true;
 }
 
-void Camera::MoveTarget(const EngineMathF::Vector3& move)
+void Camera::MoveTarget(const AliceMathF::Vector3& move)
 {
 	target += move;
 	updateViewMatrix = true;
 }
 
-void Camera::MovePosition(const EngineMathF::Vector3& move)
+void Camera::MovePosition(const AliceMathF::Vector3& move)
 {
 	eye += move;
 	updateViewMatrix = true;
@@ -156,40 +161,6 @@ void Camera::SetAspect(float aspect_)
 	aspect = aspect_;
 	updateViewMatrix = true;
 }
-
-//void Camera::SetPosition(const EngineMathF::Vector3& pos)
-//{
-//	eye = pos;
-//	updateViewMatrix = true;
-//}
-//
-//void Camera::SetPosition(float x, float y, float z)
-//{
-//	SetPosition(EngineMathF::Vector3(x, y, z));
-//}
-//
-//void Camera::SetTarget(const EngineMathF::Vector3& tgt)
-//{
-//	target = tgt;
-//	updateViewMatrix = true;
-//}
-//
-//void Camera::SetTarget(float x, float y, float z)
-//{
-//	SetTarget(EngineMathF::Vector3(x, y, z));
-//}
-//
-//void Camera::SetUp(const EngineMathF::Vector3& upVec)
-//{
-//	up = upVec;
-//	up.normal();
-//	updateProjMatrix = true;
-//}
-//
-//void Camera::SetUp(float x, float y, float z)
-//{
-//	SetUp(EngineMathF::Vector3(x, y, z));
-//}
 
 void Camera::SetFar(float fFar)
 {
@@ -242,50 +213,35 @@ void Camera::SetBottom(float bottom_)
 
 #pragma region ゲッター
 
-//const EngineMathF::Vector3& Camera::GetPosition() const
-//{
-//	return eye;
-//}
-//
-//const EngineMathF::Vector3& Camera::GetTarget() const
-//{
-//	return target;
-//}
-//
-//const EngineMathF::Vector3& Camera::GetUp() const
-//{
-//	return up;
-//}
-
-const EngineMathF::Matrix4& Camera::GetViewMatrix()
+const AliceMathF::Matrix4& Camera::GetViewMatrix()
 {
 	//更新
 	Update();
 	return viewMatrix;
 }
 
-const EngineMathF::Matrix4& Camera::GetViewMatrixInv()
+const AliceMathF::Matrix4& Camera::GetViewMatrixInv()
 {
 	//更新
 	Update();
 	return viewMatrixInv;
 }
 
-const EngineMathF::Matrix4& Camera::GetProjectionMatrix()
+const AliceMathF::Matrix4& Camera::GetProjectionMatrix()
 {
 	//更新
 	Update();
 	return projectionMatrix;
 }
 
-const EngineMathF::Matrix4& Camera::GetViewProjectionMatrix()
+const AliceMathF::Matrix4& Camera::GetViewProjectionMatrix()
 {
 	//更新
 	Update();
 	return viewProjectionMatrix;
 }
 
-const EngineMathF::Matrix4& Camera::GetCameraRotation()
+const AliceMathF::Matrix4& Camera::GetCameraRotation()
 {
 	//更新
 	Update();
@@ -312,7 +268,7 @@ float Camera::GetTargetToPositionLength() const
 	return tgtToPosLen;
 }
 
-const EngineMathF::Vector3& Camera::GetForward() const
+const AliceMathF::Vector3& Camera::GetForward() const
 {
 	return forward;
 }
